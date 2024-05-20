@@ -1,4 +1,4 @@
-package uol.compass.domain.repository;
+package uol.compass.domain.dao;
 
 import java.util.List;
 import java.util.Optional;

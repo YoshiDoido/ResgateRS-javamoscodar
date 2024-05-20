@@ -3,8 +3,9 @@ package uol.compass.domain.service;
 import lombok.extern.slf4j.Slf4j;
 import uol.compass.domain.exception.CentroDeDistribuicaoNaoEncontradoException;
 import uol.compass.domain.model.CentroDistribuicao;
-import uol.compass.domain.repository.CentroDistribuicaoRepository;
-import uol.compass.infrastructure.repository.CentroDistribuicaoRepositoryImpl;
+import uol.compass.domain.model.Produto;
+import uol.compass.domain.dao.CentroDistribuicaoRepository;
+import uol.compass.infrastructure.dao_implementation.CentroDistribuicaoRepositoryImpl;
 
 import java.util.List;
 import java.util.Objects;
@@ -48,4 +49,13 @@ public class CentroDistribuicaoService {
         System.out.println();
         log.info("Centro de distribuição de id {} apagado com sucesso!", id);
     }
+
+
+    public Produto inserirDoacao(Integer id, Produto produto) {
+        Produto produtoSalvo = centroDistribuicaoRepository.inserirDoacao(id, produto);
+        System.out.println();
+        log.info("Novo produto de id {} salvo com sucesso!\n", produtoSalvo.getId());
+        return produtoSalvo;
+    }
+
 }

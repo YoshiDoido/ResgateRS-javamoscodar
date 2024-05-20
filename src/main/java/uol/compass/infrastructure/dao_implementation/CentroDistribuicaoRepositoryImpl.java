@@ -1,11 +1,15 @@
-package uol.compass.infrastructure.repository;
+package uol.compass.infrastructure.dao_implementation;
 
+import uol.compass.domain.dao.CentroDistribuicaoRepository;
 import uol.compass.domain.model.CentroDistribuicao;
-import uol.compass.domain.repository.CentroDistribuicaoRepository;
+import uol.compass.domain.model.Produto;
 import uol.compass.infrastructure.connection.DatabaseConnection;
 import uol.compass.infrastructure.exception.RepositoryException;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -127,6 +131,7 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
             try(PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setInt(1, entityId);
                 ps.executeUpdate();
+                conn.commit();
             } catch (SQLException e) {
                 conn.rollback();
                 throw e;
@@ -136,5 +141,48 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
         } catch (SQLException e) {
             throw new RepositoryException("Falha ao apagar centro de distribuição", e);
         }
+    }
+
+    @Override
+    public Produto inserirDoacao(Integer id, Produto produto) {
+        // Query para caso o produto seja da categoria HIGIENE ou ALIMENTO
+        String sql = "INSERT INTO produtos(centro_distribuicao_id, categoria, item, quantidade) VALUES(?, ?, ?, ?)";
+        int totalDeSets = 4;
+        if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
+            // Query para caso o produto seja da categoria roupa. Deixar as colunas 'sexo' e 'tamanho' por últlimo.
+            totalDeSets = 6;
+            sql = "INSERT INTO produtos(centro_distribuicao_id, categoria, item, sexo, tamanho, quantidade) VALUES(?, ?, ?, ?, ?, ?)";
+        }
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try(PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, produto.getCentroDistribuicaoId());
+                ps.setString(2, produto.getCategoria().name());
+                ps.setString(3, produto.getItem().name());
+                if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
+                    ps.setString(4, produto.getSexo().name());
+                    ps.setString(5, produto.getTamanho().name());
+                    ps.setInt(6, produto.getQuantidade());
+                }
+                ps.setInt(totalDeSets, produto.getQuantidade());
+                ps.executeUpdate();
+                try(ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int idProdutoCriado = rs.getInt(1);
+                        produto.setId(idProdutoCriado);
+                    }
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Falha ao inserir um produto ao centro de distribuicao", e);
+        }
+
+        return produto;
     }
 }

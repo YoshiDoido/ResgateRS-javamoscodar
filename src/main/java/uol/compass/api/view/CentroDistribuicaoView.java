@@ -4,6 +4,7 @@ import uol.compass.api.controller.CentroDistribuicaoController;
 import uol.compass.api.exception.OperacaoInvalidaException;
 import uol.compass.domain.exception.CentroDeDistribuicaoNaoEncontradoException;
 import uol.compass.domain.model.CentroDistribuicao;
+import uol.compass.domain.model.Produto;
 import uol.compass.domain.service.CentroDistribuicaoService;
 
 import java.util.InputMismatchException;
@@ -14,12 +15,12 @@ public class CentroDistribuicaoView implements TableView {
     private static final int LIST_ALL_CENTROS_DISTRIBUICAO = 1;
     private static final int GET_CENTRO_DISTRIBUICAO_BY_ID = 2;
     private static final int SAVE_CENTRO_DISTRIBUICAO = 3;
+    public static final int UPDATE_CENTRO_DISTRIBUICAO = 4;
     public static final int DELETE_CENTRO_DISTRIBUICAO = 5;
 
     private static final int TAMANHO_CEP = 9;
 
     public static final Scanner SCANNER = new Scanner(System.in);
-    public static final int UPDATE_CENTRO_DISTRIBUICAO = 4;
 
     private final CentroDistribuicaoController centroDistribuicaoController = new CentroDistribuicaoController();
     private final CentroDistribuicaoService centroDistribuicaoService = new CentroDistribuicaoService();
@@ -34,6 +35,7 @@ public class CentroDistribuicaoView implements TableView {
         System.out.println("[3] - Salvar um Centro de Distribuição");
         System.out.println("[4] - Atualizar um Centro de Distribuição");
         System.out.println("[5] - Apagar um Centro de Distribuição");
+        System.out.println("[6] - Inserir uma nova doação");
         System.out.println("----------------------------------------------------");
     }
 
@@ -67,8 +69,126 @@ public class CentroDistribuicaoView implements TableView {
             case SAVE_CENTRO_DISTRIBUICAO -> saveNewCentroDistribuicao();
             case UPDATE_CENTRO_DISTRIBUICAO -> updateCentroDistribuicao();
             case DELETE_CENTRO_DISTRIBUICAO -> deleteCentroDistribuicaoById();
+            case 6 -> inserirDoacao();
             default -> throw new OperacaoInvalidaException(intUserInput);
         }
+    }
+
+    private void inserirDoacao() {
+        System.out.println();
+        try {
+            System.out.print("ID do Centro de Distribuição em que a doação será feita: ");
+            var id = SCANNER.nextInt();
+            centroDistribuicaoService.findByIdOrException(id);
+            SCANNER.nextLine();
+            System.out.println();
+
+            var produto = new Produto();
+            produto.setCentroDistribuicaoId(id);
+            produto.setCategoria(validateProdutoCategoria());
+            produto.setItem(validateProdutoItem(produto.getCategoria()));
+            if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
+                produto.setSexo(validateProdutoSexo());
+                produto.setTamanho(validateProdutoTamanho());
+            }
+            produto.setQuantidade(validateProdutoQuantidade());
+            Produto produtoSalvo = centroDistribuicaoService.inserirDoacao(id, produto);
+            System.out.println(produtoSalvo);
+        } catch (InputMismatchException e) {
+            SCANNER.nextLine();
+            System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
+        } catch (CentroDeDistribuicaoNaoEncontradoException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private Integer validateProdutoQuantidade() {
+        int quantidade;
+        while (true) {
+            System.out.print("Quantidade: ");
+            try {
+                quantidade = SCANNER.nextInt();
+                if (quantidade > 0) {
+                    break;
+                }
+            } catch (InputMismatchException e) {
+                SCANNER.nextLine();
+                System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
+            }
+        }
+
+        return quantidade;
+    }
+
+    private Produto.Tamanho validateProdutoTamanho() {
+        Produto.Tamanho tamanho;
+        while (true) {
+            System.out.print("Tamanho [INFANTIL / PP / P / M / G / GG]: ");
+            String tamanhoInput = SCANNER.nextLine().toUpperCase();
+            try {
+                tamanho = Produto.Tamanho.valueOf(tamanhoInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Item inválido. Tente novamente.");
+            }
+        }
+        return tamanho;
+    }
+
+    private Produto.Item validateProdutoItem(Produto.Categoria categoria) {
+        Produto.Item item;
+        while (true) {
+            printProdutoItem(categoria);
+            String itemInput = SCANNER.nextLine().toUpperCase();
+            try {
+                item = Produto.Item.valueOf(itemInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Item inválido. Tente novamente.");
+            }
+        }
+        return item;
+    }
+
+    private void printProdutoItem(Produto.Categoria categoria) {
+        if (categoria.equals(Produto.Categoria.ROUPA)) {
+            System.out.print("Item [AGASALHO / CAMISA]: ");
+        } else if (categoria.equals(Produto.Categoria.HIGIENE)) {
+            System.out.print("Item [ESCOVA_DE_DENTES / PASTA_DE_DENTES / ABSORVENTE]: ");
+        } else  {
+            System.out.print("Item [ARROZ / FEIJAO / LEITE]: ");
+        }
+    }
+
+    private Produto.Sexo validateProdutoSexo() {
+        Produto.Sexo sexo;
+        while (true) {
+            System.out.print("Sexo [F / M]: ");
+            String sexoInput = SCANNER.nextLine().toUpperCase();
+            try {
+                sexo = Produto.Sexo.valueOf(sexoInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Sexo inválido. Tente novamente.");
+            }
+        }
+
+        return sexo;
+    }
+
+    private Produto.Categoria validateProdutoCategoria() {
+        Produto.Categoria categoria;
+        while (true) {
+            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO]: ");
+            String categoriaInput = SCANNER.nextLine().toUpperCase();
+            try {
+                categoria = Produto.Categoria.valueOf(categoriaInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Categoria inválida. Tente novamente.");
+            }
+        }
+        return categoria;
     }
 
     private void updateCentroDistribuicao() {

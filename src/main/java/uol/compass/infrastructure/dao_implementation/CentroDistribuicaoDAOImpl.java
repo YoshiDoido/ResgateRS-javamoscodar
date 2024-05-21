@@ -1,6 +1,6 @@
 package uol.compass.infrastructure.dao_implementation;
 
-import uol.compass.domain.dao.CentroDistribuicaoRepository;
+import uol.compass.domain.dao.CentroDistribuicaoDAO;
 import uol.compass.domain.model.CentroDistribuicao;
 import uol.compass.domain.model.Produto;
 import uol.compass.infrastructure.connection.DatabaseConnection;
@@ -10,16 +10,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepository {
+public class CentroDistribuicaoDAOImpl implements CentroDistribuicaoDAO {
 
     @Override
     public List<CentroDistribuicao> findAll() {
         String sql = "SELECT * FROM centro_distribuicao";
-//        System.out.printf("Query: %s\n", sql);
         List<CentroDistribuicao> centrosDistribuicao = new ArrayList<>();
         try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             try(ResultSet rs = ps.executeQuery()) {
@@ -42,9 +39,8 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
 
     @Override
     public Optional<CentroDistribuicao> findById(Integer entityId) {
-        String sql = "SELECT * FROM centro_distribuicao WHERE id = ?";
-//        System.out.printf("Query: %s\n", sql);
         CentroDistribuicao centroDistribuicao = null;
+        String sql = "SELECT * FROM centro_distribuicao WHERE id = ?";
         try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, entityId);
             try(ResultSet rs = ps.executeQuery()) {
@@ -66,7 +62,6 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
     @Override
     public <S extends CentroDistribuicao> S save(S entity) {
         String sql = "INSERT INTO centro_distribuicao(nome, endereco, cep) VALUES(?, ?, ?)";
-//        System.out.printf("Query: %s\n", sql);
         try(Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             try(PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -97,7 +92,6 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
     @Override
     public <S extends CentroDistribuicao> S update(Integer entityId, S entity) {
         String sql = "UPDATE centro_distribuicao SET nome = ?, endereco = ?, cep = ? WHERE id = ?";
-//        System.out.printf("Query: %s\n", sql);
         try(Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             try(PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -125,7 +119,6 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
     @Override
     public void deleteById(Integer entityId) {
         String sql = "DELETE FROM centro_distribuicao WHERE id = ?";
-//        System.out.printf("Query: %s\n", sql);
         try(Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             try(PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -162,7 +155,6 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
                 if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
                     ps.setString(4, produto.getSexo().name());
                     ps.setString(5, produto.getTamanho().name());
-                    ps.setInt(6, produto.getQuantidade());
                 }
                 ps.setInt(totalDeSets, produto.getQuantidade());
                 ps.executeUpdate();
@@ -185,4 +177,59 @@ public class CentroDistribuicaoRepositoryImpl implements CentroDistribuicaoRepos
 
         return produto;
     }
+
+    @Override
+    public List<Produto> findAllDoacoes(Integer id) {
+        List<Produto> produtos = new ArrayList<>();
+        String sql = "SELECT p.* FROM centro_distribuicao cd " + "INNER JOIN produtos p " +
+                "ON (p.centro_distribuicao_id = cd.id) " +
+                "WHERE cd.id = ?;";
+        try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    var produto = new Produto();
+                    produto.setId(rs.getInt("id"));
+                    produto.setCentroDistribuicaoId(rs.getInt("centro_distribuicao_id"));
+                    produto.setCategoria(Produto.Categoria.valueOf(rs.getString("categoria")));
+                    produto.setItem(Produto.Item.valueOf(rs.getString("item")));
+                    if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
+                        produto.setSexo(Produto.Sexo.valueOf(rs.getString("sexo")));
+                        produto.setTamanho(Produto.Tamanho.valueOf(rs.getString("tamanho")));
+                    }
+                    produto.setQuantidade(rs.getInt("quantidade"));
+                    produtos.add(produto);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Falha ao recuperar todos produtos do centro de distribuição", e);
+        }
+
+        return produtos;
+    }
+
+    @Override
+    public Map<Produto.Categoria, Integer> totalDoacoes(Integer id) {
+        Map<Produto.Categoria, Integer> categoriaQuantidade = new HashMap<>();
+        String sql = "SELECT p.categoria, SUM(quantidade) AS 'quantidade' FROM centro_distribuicao cd " +
+                "INNER JOIN produtos p ON (p.centro_distribuicao_id = cd.id) " +
+                "WHERE cd.id = ? GROUP BY categoria;";
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    categoriaQuantidade.put(
+                            Produto.Categoria.valueOf(rs.getString("categoria")),
+                            rs.getInt("quantidade")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+
+        }
+
+        return categoriaQuantidade;
+    }
+
+
 }

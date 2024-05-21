@@ -2,6 +2,7 @@ package uol.compass.api.view;
 
 import uol.compass.api.controller.CentroDistribuicaoController;
 import uol.compass.api.exception.OperacaoInvalidaException;
+import uol.compass.domain.exception.CategoriaLimiteMaximoException;
 import uol.compass.domain.exception.CentroDeDistribuicaoNaoEncontradoException;
 import uol.compass.domain.model.CentroDistribuicao;
 import uol.compass.domain.model.Produto;
@@ -27,7 +28,7 @@ public class CentroDistribuicaoView implements TableView {
 
     private void showOperations() {
         System.out.println();
-        System.out.println("----------------------------------------------------");
+        System.out.println("---------------------------------------------------------------");
 //        System.out.println("[0] - Inicio");
 //        System.out.println();
         System.out.println("[1] - Mostrar todos Centros de Distribuição");
@@ -36,7 +37,8 @@ public class CentroDistribuicaoView implements TableView {
         System.out.println("[4] - Atualizar um Centro de Distribuição");
         System.out.println("[5] - Apagar um Centro de Distribuição");
         System.out.println("[6] - Inserir uma nova doação");
-        System.out.println("----------------------------------------------------");
+        System.out.println("[7] - Mostrar todas doações de um Centro de Distribuição");
+        System.out.println("---------------------------------------------------------------");
     }
 
 
@@ -64,13 +66,33 @@ public class CentroDistribuicaoView implements TableView {
 
     private void getOperation(int intUserInput) {
         switch (intUserInput) {
-            case LIST_ALL_CENTROS_DISTRIBUICAO -> getCentroDistribuicaos();
+            case LIST_ALL_CENTROS_DISTRIBUICAO -> getCentrosDistribuicao();
             case GET_CENTRO_DISTRIBUICAO_BY_ID -> readCentroDistribuicaoId();
             case SAVE_CENTRO_DISTRIBUICAO -> saveNewCentroDistribuicao();
             case UPDATE_CENTRO_DISTRIBUICAO -> updateCentroDistribuicao();
             case DELETE_CENTRO_DISTRIBUICAO -> deleteCentroDistribuicaoById();
             case 6 -> inserirDoacao();
+            case 7 -> getCentroDistribuicaoDoacoes();
             default -> throw new OperacaoInvalidaException(intUserInput);
+        }
+    }
+
+    private void getCentroDistribuicaoDoacoes() {
+        System.out.println();
+        while (true) {
+            try {
+                System.out.print("ID do Centro de Distribuição: ");
+                var id = SCANNER.nextInt();
+                centroDistribuicaoService.findByIdOrException(id);
+                centroDistribuicaoService.listAllProdutosCentroDistribuicao(id).forEach(System.out::println);
+                break;
+            } catch (InputMismatchException e) {
+                SCANNER.nextLine();
+                System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
+            } catch (CentroDeDistribuicaoNaoEncontradoException e) {
+                System.out.println(e.getMessage());
+                break;
+            }
         }
     }
 
@@ -97,8 +119,8 @@ public class CentroDistribuicaoView implements TableView {
         } catch (InputMismatchException e) {
             SCANNER.nextLine();
             System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
-        } catch (CentroDeDistribuicaoNaoEncontradoException e) {
-            System.out.println(e.getMessage());
+        } catch (CentroDeDistribuicaoNaoEncontradoException | CategoriaLimiteMaximoException e) {
+            System.out.println("\n" + e.getMessage());
         }
     }
 
@@ -108,9 +130,10 @@ public class CentroDistribuicaoView implements TableView {
             System.out.print("Quantidade: ");
             try {
                 quantidade = SCANNER.nextInt();
-                if (quantidade > 0) {
+                if (quantidade > 0 && quantidade <= 1000) {
                     break;
                 }
+                System.out.println("Quantidade deve ser um valor entre 1 até 1000");
             } catch (InputMismatchException e) {
                 SCANNER.nextLine();
                 System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
@@ -327,7 +350,7 @@ public class CentroDistribuicaoView implements TableView {
     }
 
 
-    private void getCentroDistribuicaos() {
+    private void getCentrosDistribuicao() {
         System.out.println();
         centroDistribuicaoService.findAll().forEach(System.out::println);
     }

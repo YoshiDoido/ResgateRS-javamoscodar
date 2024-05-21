@@ -48,12 +48,12 @@ public class GeneralView {
 
 
     private void startPrint() {
-        System.out.println("----------------------------------------------------");
+        System.out.println("---------------------------------------------------------------");
         System.out.println("[1] - Centro de Distribuição");
         System.out.println("[2] - ...");
         System.out.println("[?] - ...");
         System.out.println("[?] - ...");
-        System.out.println("----------------------------------------------------");
+        System.out.println("---------------------------------------------------------------");
     }
 
 

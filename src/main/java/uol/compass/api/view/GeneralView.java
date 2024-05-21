@@ -8,6 +8,8 @@ import java.util.Scanner;
 public class GeneralView {
 
     public static final int CENTRO_DISTRIBUICAO = 1;
+    public static final int DOACOES = 2;
+
 
     private static final Scanner SCANNER = new Scanner(System.in);
 
@@ -50,7 +52,7 @@ public class GeneralView {
     private void startPrint() {
         System.out.println("---------------------------------------------------------------");
         System.out.println("[1] - Centro de Distribuição");
-        System.out.println("[2] - ...");
+        System.out.println("[2] - Doações");
         System.out.println("[?] - ...");
         System.out.println("[?] - ...");
         System.out.println("---------------------------------------------------------------");
@@ -60,10 +62,10 @@ public class GeneralView {
     private TableView getTableView(int tableInt) {
         return switch (tableInt) {
             case CENTRO_DISTRIBUICAO -> new CentroDistribuicaoView();
+            case DOACOES -> new DoacaoView();
             default -> throw new TabelaInvalidaException(tableInt);
         };
     }
-
 
     private boolean exit() {
         while (true) {

@@ -36,8 +36,6 @@ public class CentroDistribuicaoView implements TableView {
         System.out.println("[3] - Salvar um Centro de Distribuição");
         System.out.println("[4] - Atualizar um Centro de Distribuição");
         System.out.println("[5] - Apagar um Centro de Distribuição");
-        System.out.println("[6] - Inserir uma nova doação");
-        System.out.println("[7] - Mostrar todas doações de um Centro de Distribuição");
         System.out.println("---------------------------------------------------------------");
     }
 

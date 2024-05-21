@@ -12,5 +12,6 @@ public class Doacao {
     private Integer id;
     private String centro;
     private LocalDate data;
+    private CentroDistribuicao centroDistribuicao;
 
 }

@@ -77,5 +77,7 @@ CREATE TABLE Transferencias (
   tamanho VARCHAR(10) NOT NULL,
   quantidade INT NOT NULL,
   FOREIGN KEY (centro_distribuicao_origem_id) REFERENCES CentrosDistribuicao(id),
-  FOREIGN KEY (centro_distribuicao_destino_id) REFERENCES CentrosDistribuicao(id)
+  FOREIGN KEY (centro_distribuicao_destino_id) REFERENCES CentrosDistribuicao(id),
+  FOREIGN KEY
+  (abrigo_destino_id) REFERENCES Abrigo(id)
 );

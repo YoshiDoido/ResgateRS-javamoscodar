@@ -50,7 +50,7 @@ public class GeneralView {
     private void startPrint() {
         System.out.println("---------------------------------------------------------------");
         System.out.println("[1] - Centro de Distribuição");
-        System.out.println("[2] - ...");
+        System.out.println("[2] - Abrigo");
         System.out.println("[?] - ...");
         System.out.println("[?] - ...");
         System.out.println("---------------------------------------------------------------");
@@ -60,6 +60,7 @@ public class GeneralView {
     private TableView getTableView(int tableInt) {
         return switch (tableInt) {
             case CENTRO_DISTRIBUICAO -> new CentroDistribuicaoView();
+            case 2 -> new AbrigoView();
             default -> throw new TabelaInvalidaException(tableInt);
         };
     }

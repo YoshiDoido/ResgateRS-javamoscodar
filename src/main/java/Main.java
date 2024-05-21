@@ -1,4 +1,5 @@
 import uol.compass.api.view.GeneralView;
+import uol.compass.domain.model.Produto;
 import uol.compass.infrastructure.connection.DatabaseConnection;
 import uol.compass.infrastructure.exception.ConnectionException;
 

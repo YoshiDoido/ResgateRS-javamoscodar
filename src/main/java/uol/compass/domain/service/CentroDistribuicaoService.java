@@ -14,6 +14,7 @@ import java.util.Objects;
 @Slf4j
 public class CentroDistribuicaoService {
 
+    public static final int CATEGORIA_ESTOQUE_MAXIMO = 1000;
     private final CentroDistribuicaoDAO centroDistribuicaoDAO;
 
     public CentroDistribuicaoService() {
@@ -54,14 +55,14 @@ public class CentroDistribuicaoService {
 
     public Produto inserirDoacao(Integer id, Produto produto) {
         centroDistribuicaoDAO.totalDoacoes(id).forEach((categoria, quantidade) -> {
-            if (quantidade >= 1000) {
+            if (produto.getCategoria().equals(categoria) && quantidade >= CATEGORIA_ESTOQUE_MAXIMO) {
                 throw new CategoriaLimiteMaximoException(
                         String.format("Categoria %s atingiu seu limitie máximo (1000).", categoria)
                 );
             }
             int total = quantidade + produto.getQuantidade();
-            if (produto.getCategoria().equals(categoria) && total > 1000) {
-                produto.setQuantidade(total-1000);
+            if (produto.getCategoria().equals(categoria) && total > CATEGORIA_ESTOQUE_MAXIMO) {
+                produto.setQuantidade(produto.getQuantidade() - (total - CATEGORIA_ESTOQUE_MAXIMO));
                 System.out.println("\nQuantidade ultrapassou o limite da categoria. Ajuste feito\n");
             }
         });
@@ -73,6 +74,14 @@ public class CentroDistribuicaoService {
 
 
     public List<Produto> listAllProdutosCentroDistribuicao(Integer id) {
+        findByIdOrException(id);
+        centroDistribuicaoTotalDoacoes(id);
         return centroDistribuicaoDAO.findAllDoacoes(id);
+    }
+
+    public void centroDistribuicaoTotalDoacoes(Integer id) {
+        centroDistribuicaoDAO.totalDoacoes(id).forEach(
+                (categoria, quantidade) -> System.out.println(categoria + ": " + quantidade)
+        );
     }
 }

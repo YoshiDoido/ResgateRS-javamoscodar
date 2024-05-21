@@ -38,6 +38,7 @@ public class CentroDistribuicaoView implements TableView {
         System.out.println("[5] - Apagar um Centro de Distribuição");
         System.out.println("[6] - Inserir uma nova doação");
         System.out.println("[7] - Mostrar todas doações de um Centro de Distribuição");
+        System.out.println("[7] - Mostrar todas doações de um Centro de Distribuição");
         System.out.println("---------------------------------------------------------------");
     }
 
@@ -83,7 +84,6 @@ public class CentroDistribuicaoView implements TableView {
             try {
                 System.out.print("ID do Centro de Distribuição: ");
                 var id = SCANNER.nextInt();
-                centroDistribuicaoService.findByIdOrException(id);
                 centroDistribuicaoService.listAllProdutosCentroDistribuicao(id).forEach(System.out::println);
                 break;
             } catch (InputMismatchException e) {
@@ -133,7 +133,7 @@ public class CentroDistribuicaoView implements TableView {
                 if (quantidade > 0 && quantidade <= 1000) {
                     break;
                 }
-                System.out.println("Quantidade deve ser um valor entre 1 até 1000");
+                System.out.println("Quantidade deve ser um valor de 1 a 1000");
             } catch (InputMismatchException e) {
                 SCANNER.nextLine();
                 System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");

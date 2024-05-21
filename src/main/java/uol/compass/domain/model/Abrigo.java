@@ -5,6 +5,8 @@ public class Abrigo {
     private Integer id;
     private String nome;
     private String endereco;
+    private String cep;
+    private String cidade;
     private String responsavel;
     private String telefone;
     private String email;
@@ -15,10 +17,12 @@ public class Abrigo {
 
     }
 
-    public Abrigo(Integer id, String nome, String endereco, String responsavel, String telefone, String email, Integer capacidade, Double ocuupacao) {
+    public Abrigo(Integer id, String nome, String endereco, String cep, String cidade, String responsavel, String telefone, String email, Integer capacidade, Double ocuupacao) {
         this.id = id;
         this.nome = nome;
         this.endereco = endereco;
+        this.cep = cep;
+        this.cidade = cidade;
         this.responsavel = responsavel;
         this.telefone = telefone;
         this.email = email;
@@ -48,6 +52,22 @@ public class Abrigo {
 
     public void setEndereco(String endereco) {
         this.endereco = endereco;
+    }
+
+    public String getCep() {
+        return cep;
+    }
+
+    public void setCep(String cep) {
+        this.cep = cep;
+    }
+
+    public String getCidade() {
+        return cidade;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
     }
 
     public String getResponsavel() {

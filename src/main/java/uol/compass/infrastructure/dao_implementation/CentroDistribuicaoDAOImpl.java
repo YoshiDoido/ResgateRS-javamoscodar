@@ -2,7 +2,7 @@ package uol.compass.infrastructure.dao_implementation;
 
 import uol.compass.domain.dao.CentroDistribuicaoDAO;
 import uol.compass.domain.model.CentroDistribuicao;
-import uol.compass.domain.model.Produto;
+import uol.compass.domain.model.Doacao;
 import uol.compass.infrastructure.connection.DatabaseConnection;
 import uol.compass.infrastructure.exception.RepositoryException;
 
@@ -137,31 +137,31 @@ public class CentroDistribuicaoDAOImpl implements CentroDistribuicaoDAO {
     }
 
     @Override
-    public Produto inserirDoacao(Integer id, Produto produto) {
+    public Doacao inserirDoacao(Integer id, Doacao doacao) {
         // Query para caso o produto seja da categoria HIGIENE ou ALIMENTO
-        String sql = "INSERT INTO produtos(centro_distribuicao_id, categoria, item, quantidade) VALUES(?, ?, ?, ?)";
+        String sql = "INSERT INTO produtos(armazem_id, categoria, item, quantidade) VALUES(?, ?, ?, ?)";
         int totalDeSets = 4;
-        if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
+        if (doacao.getCategoria().equals(Doacao.Categoria.ROUPA)) {
             // Query para caso o produto seja da categoria roupa. Deixar as colunas 'sexo' e 'tamanho' por últlimo.
             totalDeSets = 6;
-            sql = "INSERT INTO produtos(centro_distribuicao_id, categoria, item, sexo, tamanho, quantidade) VALUES(?, ?, ?, ?, ?, ?)";
+            sql = "INSERT INTO produtos(armazem_id, categoria, item, sexo, tamanho, quantidade) VALUES(?, ?, ?, ?, ?, ?)";
         }
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             try(PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(1, produto.getCentroDistribuicaoId());
-                ps.setString(2, produto.getCategoria().name());
-                ps.setString(3, produto.getItem().name());
-                if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
-                    ps.setString(4, produto.getSexo().name());
-                    ps.setString(5, produto.getTamanho().name());
+                ps.setInt(1, doacao.getArmazemId());
+                ps.setString(2, doacao.getCategoria().name());
+                ps.setString(3, doacao.getItem().name());
+                if (doacao.getCategoria().equals(Doacao.Categoria.ROUPA)) {
+                    ps.setString(4, doacao.getSexo().name());
+                    ps.setString(5, doacao.getTamanho().name());
                 }
-                ps.setInt(totalDeSets, produto.getQuantidade());
+                ps.setInt(totalDeSets, doacao.getQuantidade());
                 ps.executeUpdate();
                 try(ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {
                         int idProdutoCriado = rs.getInt(1);
-                        produto.setId(idProdutoCriado);
+                        doacao.setId(idProdutoCriado);
                     }
                 }
                 conn.commit();
@@ -175,60 +175,78 @@ public class CentroDistribuicaoDAOImpl implements CentroDistribuicaoDAO {
             throw new RepositoryException("Falha ao inserir um produto ao centro de distribuicao", e);
         }
 
-        return produto;
+        return doacao;
     }
 
     @Override
-    public List<Produto> findAllDoacoes(Integer id) {
-        List<Produto> produtos = new ArrayList<>();
-        String sql = "SELECT p.* FROM centro_distribuicao cd " + "INNER JOIN produtos p " +
-                "ON (p.centro_distribuicao_id = cd.id) " +
-                "WHERE cd.id = ?;";
+    public List<Doacao> findAllDoacoes(Integer id) {
+        List<Doacao> doacaos = new ArrayList<>();
+        String sql = "SELECT p.* FROM centro_distribuicao cd INNER JOIN armazem a ON (a.centro_distribuicao_id = cd.id)" +
+                " INNER JOIN produtos p ON (p.armazem_id = a.id) WHERE cd.id = ?";
         try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try(ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    var produto = new Produto();
+                    var produto = new Doacao();
                     produto.setId(rs.getInt("id"));
-                    produto.setCentroDistribuicaoId(rs.getInt("centro_distribuicao_id"));
-                    produto.setCategoria(Produto.Categoria.valueOf(rs.getString("categoria")));
-                    produto.setItem(Produto.Item.valueOf(rs.getString("item")));
-                    if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
-                        produto.setSexo(Produto.Sexo.valueOf(rs.getString("sexo")));
-                        produto.setTamanho(Produto.Tamanho.valueOf(rs.getString("tamanho")));
+                    produto.setArmazemId(rs.getInt("armazem_id"));
+                    produto.setCategoria(Doacao.Categoria.valueOf(rs.getString("categoria")));
+                    produto.setItem(Doacao.Item.valueOf(rs.getString("item")));
+                    if (produto.getCategoria().equals(Doacao.Categoria.ROUPA)) {
+                        produto.setSexo(Doacao.Sexo.valueOf(rs.getString("sexo")));
+                        produto.setTamanho(Doacao.Tamanho.valueOf(rs.getString("tamanho")));
                     }
                     produto.setQuantidade(rs.getInt("quantidade"));
-                    produtos.add(produto);
+                    doacaos.add(produto);
                 }
             }
         } catch (SQLException e) {
             throw new RepositoryException("Falha ao recuperar todos produtos do centro de distribuição", e);
         }
 
-        return produtos;
+        return doacaos;
     }
 
     @Override
-    public Map<Produto.Categoria, Integer> totalDoacoes(Integer id) {
-        Map<Produto.Categoria, Integer> categoriaQuantidade = new HashMap<>();
+    public Map<Doacao.Categoria, Integer> totalDoacoes(Integer id) {
+        Map<Doacao.Categoria, Integer> categoriaQuantidade = new HashMap<>();
         String sql = "SELECT p.categoria, SUM(quantidade) AS 'quantidade' FROM centro_distribuicao cd " +
-                "INNER JOIN produtos p ON (p.centro_distribuicao_id = cd.id) " +
-                "WHERE cd.id = ? GROUP BY categoria;";
+                "INNER JOIN armazem a ON (a.centro_distribuicao_id = cd.id) " +
+                "INNER JOIN produtos p ON (p.armazem_id = a.id) " +
+                "WHERE cd.id = ? GROUP BY categoria";
         try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try(ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     categoriaQuantidade.put(
-                            Produto.Categoria.valueOf(rs.getString("categoria")),
+                            Doacao.Categoria.valueOf(rs.getString("categoria")),
                             rs.getInt("quantidade")
                     );
                 }
             }
         } catch (SQLException e) {
-
+            throw new RepositoryException("Falaha ao recuperar todas doações do centro de distribuição", e);
         }
 
         return categoriaQuantidade;
+    }
+
+    @Override
+    public Integer getArmazemId(Integer id) {
+        Integer armazemId = null;
+        String sql = "SELECT a.id FROM centro_distribuicao cd " +
+                "INNER JOIN armazem a ON (a.centro_distribuicao_id = cd.id) where cd.id = ?";
+        try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    armazemId = rs.getInt( "id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Falha ao recuperar id do armazem", e);
+        }
+        return armazemId;
     }
 
 

@@ -1,11 +1,14 @@
 package uol.compass.domain.service;
 
 import lombok.extern.slf4j.Slf4j;
+import uol.compass.domain.dao.ArmazemDAO;
 import uol.compass.domain.exception.CategoriaLimiteMaximoException;
 import uol.compass.domain.exception.CentroDeDistribuicaoNaoEncontradoException;
 import uol.compass.domain.model.CentroDistribuicao;
-import uol.compass.domain.model.Produto;
+import uol.compass.domain.model.Doacao;
 import uol.compass.domain.dao.CentroDistribuicaoDAO;
+import uol.compass.domain.model.dto.TipoArmazem;
+import uol.compass.infrastructure.dao_implementation.ArmazemDAOImpl;
 import uol.compass.infrastructure.dao_implementation.CentroDistribuicaoDAOImpl;
 
 import java.util.List;
@@ -15,11 +18,8 @@ import java.util.Objects;
 public class CentroDistribuicaoService {
 
     public static final int CATEGORIA_ESTOQUE_MAXIMO = 1000;
-    private final CentroDistribuicaoDAO centroDistribuicaoDAO;
-
-    public CentroDistribuicaoService() {
-        this.centroDistribuicaoDAO = new CentroDistribuicaoDAOImpl();;
-    }
+    private final CentroDistribuicaoDAO centroDistribuicaoDAO = new CentroDistribuicaoDAOImpl();
+    private final ArmazemDAO armazemDAO = new ArmazemDAOImpl();
 
     public List<CentroDistribuicao> findAll() {
         return centroDistribuicaoDAO.findAll();
@@ -33,8 +33,10 @@ public class CentroDistribuicaoService {
 
     public CentroDistribuicao save(CentroDistribuicao centroDistribuicao) {
         CentroDistribuicao savedCentroDistribuicao = centroDistribuicaoDAO.save(centroDistribuicao);
+        armazemDAO.save(savedCentroDistribuicao.getId(), TipoArmazem.CENTRO_DISTRIBUICAO);
         System.out.println();
-        log.info("Novo centro de distribuição de id {} salvo com sucesso!\n", savedCentroDistribuicao.getId());
+        log.info("Novo centro de distribuição de id {} salvo com sucesso!", savedCentroDistribuicao.getId());
+        log.info("Armazem do centro de distribuição salvo com sucesso!\n");
         return savedCentroDistribuicao;
     }
 
@@ -53,27 +55,28 @@ public class CentroDistribuicaoService {
     }
 
 
-    public Produto inserirDoacao(Integer id, Produto produto) {
+    public Doacao inserirDoacao(Integer id, Doacao doacao) {
         centroDistribuicaoDAO.totalDoacoes(id).forEach((categoria, quantidade) -> {
-            if (produto.getCategoria().equals(categoria) && quantidade >= CATEGORIA_ESTOQUE_MAXIMO) {
+            if (doacao.getCategoria().equals(categoria) && quantidade >= CATEGORIA_ESTOQUE_MAXIMO) {
                 throw new CategoriaLimiteMaximoException(
                         String.format("Categoria %s atingiu seu limitie máximo (1000).", categoria)
                 );
             }
-            int total = quantidade + produto.getQuantidade();
-            if (produto.getCategoria().equals(categoria) && total > CATEGORIA_ESTOQUE_MAXIMO) {
-                produto.setQuantidade(produto.getQuantidade() - (total - CATEGORIA_ESTOQUE_MAXIMO));
+            int total = quantidade + doacao.getQuantidade();
+            if (doacao.getCategoria().equals(categoria) && total > CATEGORIA_ESTOQUE_MAXIMO) {
+                doacao.setQuantidade(doacao.getQuantidade() - (total - CATEGORIA_ESTOQUE_MAXIMO));
                 System.out.println("\nQuantidade ultrapassou o limite da categoria. Ajuste feito\n");
             }
         });
-        Produto produtoSalvo = centroDistribuicaoDAO.inserirDoacao(id, produto);
+        Doacao doacaoSalvo = centroDistribuicaoDAO.inserirDoacao(id, doacao);
         System.out.println();
-        log.info("Novo produto de id {} salvo com sucesso!\n", produtoSalvo.getId());
-        return produtoSalvo;
+        log.info("Novo produto de id {} salvo com sucesso!\n", doacaoSalvo.getId());
+        return doacaoSalvo;
     }
 
 
-    public List<Produto> listAllProdutosCentroDistribuicao(Integer id) {
+    public List<Doacao> listAllProdutosCentroDistribuicao(Integer id) {
+        System.out.println();
         findByIdOrException(id);
         centroDistribuicaoTotalDoacoes(id);
         return centroDistribuicaoDAO.findAllDoacoes(id);
@@ -83,5 +86,9 @@ public class CentroDistribuicaoService {
         centroDistribuicaoDAO.totalDoacoes(id).forEach(
                 (categoria, quantidade) -> System.out.println(categoria + ": " + quantidade)
         );
+    }
+
+    public int getCentroDistribuicaoArmazemId(Integer id) {
+        return centroDistribuicaoDAO.getArmazemId(id);
     }
 }

@@ -1,11 +1,14 @@
 package uol.compass.api.view;
 
-import uol.compass.api.controller.AbrigoController;
 import uol.compass.api.exception.OperacaoInvalidaException;
 import uol.compass.domain.exception.AbrigoNaoEncontradoException;
 import uol.compass.domain.model.Abrigo;
+import uol.compass.domain.model.CentroDistribuicao;
+import uol.compass.domain.model.dto.AbrigoNecessidades;
+import uol.compass.domain.model.dto.CentroDistribuicaoAbrigoNecessidade;
 import uol.compass.domain.service.AbrigoService;
 
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -22,6 +25,7 @@ public class AbrigoView implements TableView {
     public static final Scanner SCANNER = new Scanner(System.in);
 
     private final AbrigoService abrigoService = new AbrigoService();
+    private final CentroDistribuicaoView centroDistribuicaoView = new CentroDistribuicaoView();
 
     private void showOperations() {
         System.out.println();
@@ -31,6 +35,7 @@ public class AbrigoView implements TableView {
         System.out.println("[3] - Salvar um Abrigo");
         System.out.println("[4] - Atualizar um Abrigo");
         System.out.println("[5] - Apagar um Abrigo");
+        System.out.println("[6] - Listar necessidades");
         System.out.println("----------------------------------------------------");
     }
 
@@ -64,8 +69,26 @@ public class AbrigoView implements TableView {
             case SAVE_ABRIGO -> saveNewAbrigo();
             case UPDATE_ABRIGO -> updateAbrigo();
             case DELETE_ABRIGO -> deleteAbrigoById();
+            case 6 -> listarNecessidades();
             default -> throw new OperacaoInvalidaException(intUserInput);
         }
+    }
+
+    private void listarNecessidades() {
+        System.out.println();
+        var abrigoNecessidades = new AbrigoNecessidades();
+        CentroDistribuicaoView.SCANNER.nextLine();
+        abrigoNecessidades.setCategoria(centroDistribuicaoView.validateProdutoCategoria());
+        abrigoNecessidades.setItem(centroDistribuicaoView.validateProdutoItem(abrigoNecessidades.getCategoria()));
+        abrigoNecessidades.setQuantidade(centroDistribuicaoView.validateProdutoQuantidade());
+        System.out.println();
+        var centroslist = abrigoService.listarNecessidades(abrigoNecessidades);
+        if (centroslist.isEmpty()) {
+            System.out.println("Nenhum Centro de Distribuicao pode atender as necessidades no momento. Tente novamente mais tarde.");
+            return;
+        }
+        centroslist.forEach(System.out::println);
+
     }
 
     public void getAbrigo() {

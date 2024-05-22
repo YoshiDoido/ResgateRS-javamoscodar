@@ -1,10 +1,15 @@
 package uol.compass.domain.service;
 
 import lombok.extern.slf4j.Slf4j;
+import uol.compass.domain.dao.ArmazemDAO;
 import uol.compass.domain.exception.AbrigoNaoEncontradoException;
 import uol.compass.domain.model.Abrigo;
 import uol.compass.domain.dao.AbrigoDAO;
+import uol.compass.domain.model.dto.AbrigoNecessidades;
+import uol.compass.domain.model.dto.CentroDistribuicaoAbrigoNecessidade;
+import uol.compass.domain.model.dto.TipoArmazem;
 import uol.compass.infrastructure.dao_implementation.AbrigoDAOImpl;
+import uol.compass.infrastructure.dao_implementation.ArmazemDAOImpl;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,6 +18,7 @@ import java.util.Objects;
 public class AbrigoService {
 
     private final AbrigoDAO abrigoRepository = new AbrigoDAOImpl();
+    private final ArmazemDAO armazemDAO = new ArmazemDAOImpl();
 
     public List<Abrigo> findAll() {
         return abrigoRepository.findAll();
@@ -26,8 +32,10 @@ public class AbrigoService {
 
     public Abrigo save(Abrigo abrigo) {
         Abrigo savedAbrigo = abrigoRepository.save(abrigo);
+        armazemDAO.save(abrigo.getId(), TipoArmazem.ABRIGO);
         System.out.println();
         log.info("Novo abrigo de id {} salvo com sucesso!\n", savedAbrigo.getId());
+        log.info("Armazem do centro de distribuição salvo com sucesso!\n");
         return savedAbrigo;
     }
 
@@ -42,6 +50,11 @@ public class AbrigoService {
         abrigoRepository.deleteById(id);
         System.out.println();
         log.info("Abrigo de id {} apagado com sucesso!", id);
+    }
+
+
+    public List<CentroDistribuicaoAbrigoNecessidade> listarNecessidades(AbrigoNecessidades abrigoNecessidades) {
+        return abrigoRepository.listarNecessidades(abrigoNecessidades);
     }
 
 }

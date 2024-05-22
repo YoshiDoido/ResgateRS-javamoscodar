@@ -7,7 +7,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Produto {
+public class Doacao {
     public enum Categoria {ALIMENTO, HIGIENE, ROUPA}
     public enum Item {ARROZ, FEIJAO, LEITE, SABONETE, ESCOVA_DE_DENTES, PASTA_DE_DENTES, ABSORVENTE, AGASALHO, CAMISA}
     public enum Sexo {F, M}
@@ -19,6 +19,6 @@ public class Produto {
     private Sexo sexo;
     private Tamanho tamanho;
     private Integer quantidade;
-    private Integer centroDistribuicaoId;
+    private Integer armazemId;
 
 }

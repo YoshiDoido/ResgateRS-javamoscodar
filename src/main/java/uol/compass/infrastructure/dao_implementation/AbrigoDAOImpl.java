@@ -2,6 +2,9 @@ package uol.compass.infrastructure.dao_implementation;
 
 import uol.compass.domain.dao.AbrigoDAO;
 import uol.compass.domain.model.Abrigo;
+import uol.compass.domain.model.Doacao;
+import uol.compass.domain.model.dto.AbrigoNecessidades;
+import uol.compass.domain.model.dto.CentroDistribuicaoAbrigoNecessidade;
 import uol.compass.infrastructure.connection.DatabaseConnection;
 import uol.compass.infrastructure.exception.RepositoryException;
 
@@ -9,9 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class AbrigoDAOImpl implements AbrigoDAO {
 
@@ -152,5 +153,32 @@ public class AbrigoDAOImpl implements AbrigoDAO {
         } catch (SQLException e) {
             throw new RepositoryException("Falha ao apagar abrigo", e);
         }
+    }
+
+    @Override
+    public List<CentroDistribuicaoAbrigoNecessidade> listarNecessidades(AbrigoNecessidades abrigoNecessidades) {
+        List<CentroDistribuicaoAbrigoNecessidade> centros = new ArrayList<>();
+        String sql = "SELECT cd.id AS centro_distribuicao_id, p.item, SUM(quantidade) as 'quantidade' FROM centro_distribuicao cd " +
+                "INNER JOIN armazem a ON (a.centro_distribuicao_id = cd.id) " +
+                "INNER JOIN produtos p ON (p.armazem_id = a.id) " +
+                "WHERE p.item = ? GROUP BY cd.id";
+
+        try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, abrigoNecessidades.getItem().name());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    var centroDistribuicao = new CentroDistribuicaoAbrigoNecessidade(
+                            rs.getInt("centro_distribuicao_id"),
+                            Doacao.Item.valueOf(rs.getString("item")),
+                            rs.getInt("quantidade")
+                    );
+                    centros.add(centroDistribuicao);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Falha ao processar necessidades!", e);
+        }
+
+        return centros;
     }
 }

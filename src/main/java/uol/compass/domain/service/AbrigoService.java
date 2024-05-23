@@ -58,10 +58,19 @@ public class AbrigoService {
         return abrigoRepository.listarNecessidades(abrigoNecessidades);
     }
 
-    public List<Doacao> getAllDoacoesAbrigo(Integer abrigoId) {
-        findByIdOrException(abrigoId);
 
-        return AbrigoDAO.findAllAbrigoDoacoes(abrigoId);
+    /*
+    * criar o método List<Doacoes> getAllDoacoesAbrigo(Integer abrigoId)`na classe AbrigoService. Dentro desse método precisamos verificar se o abrigo existe ou não, basta chamar o método `findByIdOrException(id) da mesma classe.
+     * */
+    public List<Doacao> getAllDoacoesAbrigo(Integer abrigoId) {
+
+        try {
+            findByIdOrException(abrigoId);
+            return abrigoRepository.getAllDoacoesAbrigo(abrigoId);
+        } catch (AbrigoNaoEncontradoException e) {
+            log.error("Abrigo de id {} não encontrado", abrigoId);
+            throw e;
+        }
     }
 
 }

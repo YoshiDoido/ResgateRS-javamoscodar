@@ -16,7 +16,7 @@ public class DatabaseConnection {
 
     private static final String URL = "jdbc:mysql://localhost:3306/resgate_rs?useTimezone=true&serverTimezone=UTC";
     private static final String USER = "root";
-    private static final String PASSWORD = "admin";
+    private static final String PASSWORD = "1234567";
 
     static {
         log.info("Iniciando tentativa de conexão com o banco de dados...");

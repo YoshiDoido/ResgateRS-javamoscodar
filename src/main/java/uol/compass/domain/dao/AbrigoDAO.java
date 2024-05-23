@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface AbrigoDAO extends SimpleCrud<Abrigo, Integer> {
     List<CentroDistribuicaoAbrigoNecessidade> listarNecessidades(AbrigoNecessidades abrigoNecessidades);
+    Integer getAbrigoAmazemId(Integer abrigoId);
 }

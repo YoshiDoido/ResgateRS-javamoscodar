@@ -181,4 +181,24 @@ public class AbrigoDAOImpl implements AbrigoDAO {
 
         return centros;
     }
+
+    @Override
+    public Integer getAbrigoAmazemId(Integer abrigoId) {
+            Integer armazemId = null;
+            String sql = "SELECT abrigos.id FROM abrigos "
+                + "INNER JOIN armazem ON (armazem.abrigo_id = abrigos.id) "
+                + "where abrigos.id = ?";
+            try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, abrigoId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        armazemId = rs.getInt( "id");
+                    }
+                }
+            } catch (SQLException e) {
+                throw new RepositoryException("Falha ao recuperar id do armazem", e);
+            }
+            return armazemId;
+        }
+    
 }

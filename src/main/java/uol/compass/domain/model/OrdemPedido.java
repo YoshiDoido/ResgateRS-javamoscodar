@@ -9,10 +9,13 @@ import lombok.ToString;
 @ToString
 
 public class OrdemPedido {
+    public enum Status {ACEITO, RECUSADO, PENDENTE}
 
     private Integer id;
-    private CentroDistribuicao centroDistribuicaoId;
-    private String item;
+    private Integer centroDistribuicaoId;
+    private Integer abrigoId;
+    private Doacao.Item item;
+    private Status status;
     private Integer quantidade;
-
+    private String motivo;
 }

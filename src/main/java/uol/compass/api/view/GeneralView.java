@@ -51,7 +51,7 @@ public class GeneralView {
         System.out.println("---------------------------------------------------------------");
         System.out.println("[1] - Centro de Distribuição");
         System.out.println("[2] - Abrigo");
-        System.out.println("[?] - ...");
+        System.out.println("[3] - Pedido");
         System.out.println("[?] - ...");
         System.out.println("---------------------------------------------------------------");
     }

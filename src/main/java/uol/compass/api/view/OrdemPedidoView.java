@@ -14,7 +14,7 @@ public class OrdemPedidoView implements TableView {
 
     public static final Scanner SCANNER = new Scanner(System.in);
 
-    // Depois implementar a classe OrdemPedidoService
+//     Depois implementar a classe OrdemPedidoService
     private final OrdemPedidoService ordemPedidoService = new OrdemPedidoService();
 
     public void showOperations() {
@@ -66,8 +66,8 @@ public class OrdemPedidoView implements TableView {
                 System.out.println("Digite o ID do Ordem: ");
                 var id = SCANNER.nextInt();
                 try {
-                    var ordemPedido = ordemPedidoService.findByIdOrException(id);
-                    System.out.println("\n" + ordemPedido);
+                   var ordemPedido = ordemPedidoService.findByIdOrException(id);
+                   System.out.println("\n" + ordemPedido);
                 } catch (OrdemPedidoNaoEncontradoException e) {
                     System.out.println(e.getMessage());
                 }

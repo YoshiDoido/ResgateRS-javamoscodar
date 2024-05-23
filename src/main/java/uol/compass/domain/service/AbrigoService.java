@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import uol.compass.domain.dao.ArmazemDAO;
 import uol.compass.domain.exception.AbrigoNaoEncontradoException;
 import uol.compass.domain.model.Abrigo;
+import uol.compass.domain.model.Doacao;
 import uol.compass.domain.dao.AbrigoDAO;
 import uol.compass.domain.model.dto.AbrigoNecessidades;
 import uol.compass.domain.model.dto.CentroDistribuicaoAbrigoNecessidade;
@@ -55,6 +56,12 @@ public class AbrigoService {
 
     public List<CentroDistribuicaoAbrigoNecessidade> listarNecessidades(AbrigoNecessidades abrigoNecessidades) {
         return abrigoRepository.listarNecessidades(abrigoNecessidades);
+    }
+    
+    public List<Doacao> getAllDoacoesAbrigo(Integer abrigoId) {
+        findByIdOrException(abrigoId);
+
+        return AbrigoDAO.findAbrigoAllDoacoes(abrigoId);
     }
 
 }

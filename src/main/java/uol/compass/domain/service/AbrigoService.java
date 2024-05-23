@@ -57,11 +57,11 @@ public class AbrigoService {
     public List<CentroDistribuicaoAbrigoNecessidade> listarNecessidades(AbrigoNecessidades abrigoNecessidades) {
         return abrigoRepository.listarNecessidades(abrigoNecessidades);
     }
-    
+
     public List<Doacao> getAllDoacoesAbrigo(Integer abrigoId) {
         findByIdOrException(abrigoId);
 
-        return AbrigoDAO.findAbrigoAllDoacoes(abrigoId);
+        return AbrigoDAO.findAllAbrigoDoacoes(abrigoId);
     }
 
 }

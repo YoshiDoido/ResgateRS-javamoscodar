@@ -19,6 +19,9 @@ public class AbrigoView implements TableView {
     public static final int SAVE_ABRIGO = 3;
     public static final int UPDATE_ABRIGO = 4;
     public static final int DELETE_ABRIGO = 5;
+    public static final int LIST_NECESSIDADES = 6;
+    public static final int LIST_DOACOES = 7;
+
 
     private static final int TAMANHO_CEP = 9;
 
@@ -36,6 +39,7 @@ public class AbrigoView implements TableView {
         System.out.println("[4] - Atualizar um Abrigo");
         System.out.println("[5] - Apagar um Abrigo");
         System.out.println("[6] - Listar necessidades");
+        System.out.println("[7] - Mostrar doações de um Abrigo");
         System.out.println("----------------------------------------------------");
     }
 
@@ -69,7 +73,8 @@ public class AbrigoView implements TableView {
             case SAVE_ABRIGO -> saveNewAbrigo();
             case UPDATE_ABRIGO -> updateAbrigo();
             case DELETE_ABRIGO -> deleteAbrigoById();
-            case 6 -> listarNecessidades();
+            case LIST_NECESSIDADES -> listarNecessidades();
+            case LIST_DOACOES -> getAbrigoDoacoes();
             default -> throw new OperacaoInvalidaException(intUserInput);
         }
     }
@@ -343,4 +348,29 @@ public class AbrigoView implements TableView {
         }
 
     }
+
+    public void getAbrigoDoacoes() {
+        System.out.println();
+        while (true) {
+            try {
+                System.out.println("ID do Abrigo: ");
+                var id = SCANNER.nextInt();
+                SCANNER.nextLine();
+                try {
+                    var doacoes = abrigoService.getAllDoacoesAbrigo(id);
+                    if (doacoes.isEmpty()) {
+                        System.out.println("Nenhuma doação encontrada para o abrigo de ID " + id);
+                    } else {
+                        doacoes.forEach(System.out::println);
+                    }
+                } catch (AbrigoNaoEncontradoException e) {
+                    System.out.println(e.getMessage());
+                }
+            } catch (InputMismatchException e) {
+                SCANNER.nextLine();
+                System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
+            }
+        }
+    }
+
 }

@@ -181,4 +181,29 @@ public class AbrigoDAOImpl implements AbrigoDAO {
 
         return centros;
     }
+
+
+    // Revisar o código abaixo, não tenho certeza se está correto
+    // Se estiver errado, fiquem livres para mudar ele ou excluir
+    @Override
+    public List<Doacao> getAllDoacoesAbrigo(Integer abrigoId) {
+        List<Doacao> doacoes = new ArrayList<>();
+        String sql = "SELECT p.* FROM centro_distribuicao cd INNER JOIN armazem a ON (a.centro_distribuicao_id = cd.id) INNER JOIN produtos p ON (p.armazem_id = a.id) WHERE cd.id = ?";
+        try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, abrigoId);
+            try(ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    var doacao = new Doacao();
+                    doacao.setId(rs.getInt("id"));
+                    doacao.setQuantidade(rs.getInt("quantidade"));
+                    doacao.setItem(Doacao.Item.valueOf(rs.getString("item")));
+                    doacoes.add(doacao);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Falha ao recuperar doações do abrigo", e);
+        }
+
+        return doacoes;
+    }
 }

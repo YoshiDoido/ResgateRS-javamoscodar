@@ -73,7 +73,7 @@ Para instalar e rodar esse projeto de forma local, siga os seguintes passos:
 ## [Autores](#autores)
 
 - 👤 **Bruna Leticia dos Santos** - **[Github](https://github.com/Bruna-Leticia12)**
-- 👤 **Gabriel Yoshino** - **[Github](https://github.com/jhonatanfelix20)**
-- 👤 **Jhonatan Viana Felix** - **[Github](https://github.com/YoshiDoido)**
+- 👤 **Gabriel Yoshino** - **[Github](https://github.com/YoshiDoido)**
+- 👤 **Jhonatan Viana Felix** - **[Github](https://github.com/jhonatanfelix20)**
 - 👤 **Matheus Esposto** - **[Github](https://github.com/EternalGerms)**
 - 👤 **Victor Miralhas** -  **[Github](https://github.com/Miralhas)**

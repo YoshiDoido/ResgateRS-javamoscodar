@@ -1,13 +1,12 @@
 package uol.compass.domain.dao;
 
+import uol.compass.domain.dto.OrdemPedidoHistorico;
 import uol.compass.domain.model.CentroDistribuicao;
-import uol.compass.domain.model.Produto;
+import uol.compass.domain.model.OrdemPedido;
 
 import java.util.List;
-import java.util.Map;
 
 public interface CentroDistribuicaoDAO extends SimpleCrud<CentroDistribuicao, Integer>{
-    Produto inserirDoacao(Integer id, Produto produto);
-    List<Produto> findAllDoacoes(Integer id);
-    Map<Produto.Categoria, Integer> totalDoacoes(Integer id);
+    Integer getCentroDistribuicaoArmazemId(Integer id);
+    List<OrdemPedido> getCentroDistribuicaoOrdensPedido(Integer id, OrdemPedidoHistorico status);
 }

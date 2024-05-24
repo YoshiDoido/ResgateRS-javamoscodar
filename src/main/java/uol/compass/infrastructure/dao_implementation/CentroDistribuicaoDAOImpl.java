@@ -1,8 +1,10 @@
 package uol.compass.infrastructure.dao_implementation;
 
+import uol.compass.domain.dto.OrdemPedidoHistorico;
 import uol.compass.domain.dao.CentroDistribuicaoDAO;
 import uol.compass.domain.model.CentroDistribuicao;
-import uol.compass.domain.model.Produto;
+import uol.compass.domain.model.Doacao;
+import uol.compass.domain.model.OrdemPedido;
 import uol.compass.infrastructure.connection.DatabaseConnection;
 import uol.compass.infrastructure.exception.RepositoryException;
 
@@ -33,7 +35,6 @@ public class CentroDistribuicaoDAOImpl implements CentroDistribuicaoDAO {
         } catch (SQLException e) {
             throw new RepositoryException("Falha ao recuperar todos centros de distribuição", e);
         }
-
         return centrosDistribuicao;
     }
 
@@ -136,100 +137,61 @@ public class CentroDistribuicaoDAOImpl implements CentroDistribuicaoDAO {
         }
     }
 
+
     @Override
-    public Produto inserirDoacao(Integer id, Produto produto) {
-        // Query para caso o produto seja da categoria HIGIENE ou ALIMENTO
-        String sql = "INSERT INTO produtos(centro_distribuicao_id, categoria, item, quantidade) VALUES(?, ?, ?, ?)";
-        int totalDeSets = 4;
-        if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
-            // Query para caso o produto seja da categoria roupa. Deixar as colunas 'sexo' e 'tamanho' por últlimo.
-            totalDeSets = 6;
-            sql = "INSERT INTO produtos(centro_distribuicao_id, categoria, item, sexo, tamanho, quantidade) VALUES(?, ?, ?, ?, ?, ?)";
-        }
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            conn.setAutoCommit(false);
-            try(PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(1, produto.getCentroDistribuicaoId());
-                ps.setString(2, produto.getCategoria().name());
-                ps.setString(3, produto.getItem().name());
-                if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
-                    ps.setString(4, produto.getSexo().name());
-                    ps.setString(5, produto.getTamanho().name());
+    public Integer getCentroDistribuicaoArmazemId(Integer id) {
+        Integer armazemId = null;
+        String sql = "SELECT a.id FROM centro_distribuicao cd " +
+                "INNER JOIN armazem a ON (a.centro_distribuicao_id = cd.id) where cd.id = ?";
+        try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    armazemId = rs.getInt( "id");
                 }
-                ps.setInt(totalDeSets, produto.getQuantidade());
-                ps.executeUpdate();
-                try(ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        int idProdutoCriado = rs.getInt(1);
-                        produto.setId(idProdutoCriado);
-                    }
-                }
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new RepositoryException("Falha ao inserir um produto ao centro de distribuicao", e);
+            throw new RepositoryException("Falha ao recuperar id do armazem", e);
         }
-
-        return produto;
+        return armazemId;
     }
 
     @Override
-    public List<Produto> findAllDoacoes(Integer id) {
-        List<Produto> produtos = new ArrayList<>();
-        String sql = "SELECT p.* FROM centro_distribuicao cd " + "INNER JOIN produtos p " +
-                "ON (p.centro_distribuicao_id = cd.id) " +
-                "WHERE cd.id = ?;";
+    public List<OrdemPedido> getCentroDistribuicaoOrdensPedido(Integer id, OrdemPedidoHistorico status) {
+        List<OrdemPedido> ordensPedido = new ArrayList<>();
+//        String sql = getSqlQueryOrdensPedido(status);
+        String sql = "SELECT op.* FROM centro_distribuicao cd INNER JOIN ordem_pedidos op " +
+                "ON (cd.id = op.centro_distribuicao_id) WHERE cd.id = ? AND status != 'PENDENTE'";
         try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try(ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    var produto = new Produto();
-                    produto.setId(rs.getInt("id"));
-                    produto.setCentroDistribuicaoId(rs.getInt("centro_distribuicao_id"));
-                    produto.setCategoria(Produto.Categoria.valueOf(rs.getString("categoria")));
-                    produto.setItem(Produto.Item.valueOf(rs.getString("item")));
-                    if (produto.getCategoria().equals(Produto.Categoria.ROUPA)) {
-                        produto.setSexo(Produto.Sexo.valueOf(rs.getString("sexo")));
-                        produto.setTamanho(Produto.Tamanho.valueOf(rs.getString("tamanho")));
-                    }
-                    produto.setQuantidade(rs.getInt("quantidade"));
-                    produtos.add(produto);
+                    var ordemPedido = new OrdemPedido();
+                    ordemPedido.setId(rs.getInt("id"));
+                    ordemPedido.setCentroDistribuicaoId(rs.getInt("centro_distribuicao_id"));
+                    ordemPedido.setAbrigoId(rs.getInt("abrigo_id"));
+                    ordemPedido.setItem(Doacao.Item.valueOf(rs.getString("item")));
+                    ordemPedido.setStatus(OrdemPedido.Status.valueOf(rs.getString("status")));
+                    ordemPedido.setMotivo(rs.getString("motivo"));
+                    ordemPedido.setQuantidade(rs.getInt("quantidade"));
+                    ordemPedido.setCategoria(Doacao.Categoria.valueOf(rs.getString("categoria")));
+
+                    ordensPedido.add(ordemPedido);
                 }
             }
         } catch (SQLException e) {
-            throw new RepositoryException("Falha ao recuperar todos produtos do centro de distribuição", e);
+            throw new RepositoryException("Falha ao recuperar todas Ordens de Pedido do Centro de Distribuicao", e);
         }
-
-        return produtos;
+        return ordensPedido;
     }
 
-    @Override
-    public Map<Produto.Categoria, Integer> totalDoacoes(Integer id) {
-        Map<Produto.Categoria, Integer> categoriaQuantidade = new HashMap<>();
-        String sql = "SELECT p.categoria, SUM(quantidade) AS 'quantidade' FROM centro_distribuicao cd " +
-                "INNER JOIN produtos p ON (p.centro_distribuicao_id = cd.id) " +
-                "WHERE cd.id = ? GROUP BY categoria;";
-        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try(ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    categoriaQuantidade.put(
-                            Produto.Categoria.valueOf(rs.getString("categoria")),
-                            rs.getInt("quantidade")
-                    );
-                }
-            }
-        } catch (SQLException e) {
-
+    private String getSqlQueryOrdensPedido(OrdemPedidoHistorico ordemPedidoHistorico) {
+        String sql = "SELECT op.* FROM centro_distribuicao cd INNER JOIN ordem_pedidos op " +
+                "ON (cd.id = op.centro_distribuicao_id) WHERE cd.id = ? AND status = 'PENDENTE'";
+        if (ordemPedidoHistorico.equals(OrdemPedidoHistorico.HISTORICO)) {
+            sql = "SELECT op.* FROM centro_distribuicao cd INNER JOIN ordem_pedidos op " +
+                    "ON (cd.id = op.centro_distribuicao_id) WHERE cd.id = ? AND status != 'PENDENTE'";
         }
-
-        return categoriaQuantidade;
+        return sql;
     }
-
-
 }

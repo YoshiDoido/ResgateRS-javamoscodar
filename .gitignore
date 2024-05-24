@@ -8,6 +8,8 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/discord.xml
+.idea/material_theme_project_new.xml
 *.iws
 *.iml
 *.ipr
@@ -36,3 +38,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Database Properties ###
+database.properties

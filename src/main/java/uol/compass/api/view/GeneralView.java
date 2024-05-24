@@ -10,6 +10,8 @@ public class GeneralView {
     public static final int CENTRO_DISTRIBUICAO = 1;
 
     private static final Scanner SCANNER = new Scanner(System.in);
+    public static final int ABRIGO = 2;
+    public static final int ORDEM_PEDIDO = 3;
 
 
     public void start() {
@@ -51,8 +53,7 @@ public class GeneralView {
         System.out.println("---------------------------------------------------------------");
         System.out.println("[1] - Centro de Distribuição");
         System.out.println("[2] - Abrigo");
-        System.out.println("[?] - ...");
-        System.out.println("[?] - ...");
+        System.out.println("[3] - Ordem de Pedido");
         System.out.println("---------------------------------------------------------------");
     }
 
@@ -60,7 +61,8 @@ public class GeneralView {
     private TableView getTableView(int tableInt) {
         return switch (tableInt) {
             case CENTRO_DISTRIBUICAO -> new CentroDistribuicaoView();
-            case 2 -> new AbrigoView();
+            case ABRIGO -> new AbrigoView();
+            case ORDEM_PEDIDO -> new OrdemPedidoView();
             default -> throw new TabelaInvalidaException(tableInt);
         };
     }

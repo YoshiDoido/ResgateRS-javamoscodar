@@ -3,11 +3,13 @@ package uol.compass.infrastructure.dao_implementation;
 import uol.compass.domain.dao.AbrigoDAO;
 import uol.compass.domain.model.Abrigo;
 import uol.compass.domain.model.Doacao;
-import uol.compass.domain.model.dto.AbrigoNecessidades;
-import uol.compass.domain.model.dto.CentroDistribuicaoAbrigoNecessidade;
+import uol.compass.domain.dto.AbrigoNecessidades;
+import uol.compass.domain.dto.CentroDistribuicaoAbrigoNecessidade;
+import uol.compass.domain.model.OrdemPedido;
 import uol.compass.infrastructure.connection.DatabaseConnection;
 import uol.compass.infrastructure.exception.RepositoryException;
 
+import javax.xml.transform.Result;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,7 +31,6 @@ public class AbrigoDAOImpl implements AbrigoDAO {
         } catch (SQLException e) {
             throw new RepositoryException("Falha ao recuperar todos abrigos", e);
         }
-
         return abrigos;
     }
 
@@ -180,5 +181,49 @@ public class AbrigoDAOImpl implements AbrigoDAO {
         }
 
         return centros;
+    }
+
+    @Override
+    public List<OrdemPedido> abrigoOrdensPedido(Integer id) {
+        String sql = "SELECT op.* FROM abrigos a INNER JOIN ordem_pedidos op ON (a.id = op.abrigo_id) WHERE a.id = ?";
+        List<OrdemPedido> ordemPedidoList = new ArrayList<>();
+        try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    var ordemPedido = new OrdemPedido();
+                    ordemPedido.setId(rs.getInt("id"));
+                    ordemPedido.setCentroDistribuicaoId(rs.getInt("centro_distribuicao_id"));
+                    ordemPedido.setAbrigoId(rs.getInt("abrigo_id"));
+                    ordemPedido.setItem(Doacao.Item.valueOf(rs.getString("item")));
+                    ordemPedido.setStatus(OrdemPedido.Status.valueOf(rs.getString("status")));
+                    ordemPedido.setMotivo(rs.getString("motivo"));
+                    ordemPedido.setQuantidade(rs.getInt("quantidade"));
+
+                    ordemPedidoList.add(ordemPedido);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Falaha ao retribuir todas as Ordens de Pedido do abrigo", e);
+        }
+
+        return ordemPedidoList;
+    }
+
+    @Override
+    public Integer getAbrigoArmazemId(Integer id) {
+        Integer armazemId = null;
+        String sql = "SELECT armazem.id FROM abrigos INNER JOIN armazem ON (armazem.abrigo_id = abrigos.id) where abrigos.id = ?";
+        try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    armazemId = rs.getInt( "id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Falha ao recuperar id do armazem", e);
+        }
+        return armazemId;
     }
 }

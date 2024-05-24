@@ -1,14 +1,18 @@
 package uol.compass.api.view;
 
-import uol.compass.api.controller.CentroDistribuicaoController;
 import uol.compass.api.exception.OperacaoInvalidaException;
-import uol.compass.domain.exception.CategoriaLimiteMaximoException;
-import uol.compass.domain.exception.CentroDeDistribuicaoNaoEncontradoException;
+import uol.compass.domain.dto.OrdemPedidoHistorico;
+import uol.compass.domain.dto.OrdemPedidoInputStatus;
+import uol.compass.api.util.Validate;
+import uol.compass.domain.exception.*;
 import uol.compass.domain.model.CentroDistribuicao;
 import uol.compass.domain.model.Doacao;
+import uol.compass.domain.model.OrdemPedido;
 import uol.compass.domain.service.CentroDistribuicaoService;
+import uol.compass.domain.service.OrdemPedidoService;
 
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 public class CentroDistribuicaoView implements TableView {
@@ -20,53 +24,34 @@ public class CentroDistribuicaoView implements TableView {
     public static final int DELETE_CENTRO_DISTRIBUICAO = 5;
     public static final int INSERIR_DOACAO = 6;
     public static final int GET_CENTRO_DISTRIBUICAO_DOACOES = 7;
+    public static final int GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO = 8;
+    public static final int CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO = 9;
 
-    private static final int TAMANHO_CEP = 9;
+    public static final int TAMANHO_CEP = 9;
 
     public static final Scanner SCANNER = new Scanner(System.in);
 
-    private final CentroDistribuicaoController centroDistribuicaoController = new CentroDistribuicaoController();
     private final CentroDistribuicaoService centroDistribuicaoService = new CentroDistribuicaoService();
+    private final OrdemPedidoService ordemPedidoService = new OrdemPedidoService();
 
-    private void showOperations() {
+    public void showOperations() {
         System.out.println();
         System.out.println("---------------------------------------------------------------");
-//        System.out.println("[0] - Inicio");
-//        System.out.println();
         System.out.println("[1] - Mostrar todos Centros de Distribuição");
         System.out.println("[2] - Encontrar um Centro de Distribuição por ID");
         System.out.println("[3] - Salvar um Centro de Distribuição");
         System.out.println("[4] - Atualizar um Centro de Distribuição");
         System.out.println("[5] - Apagar um Centro de Distribuição");
+        System.out.println();
         System.out.println("[6] - Inserir uma nova doação");
         System.out.println("[7] - Mostrar todas doações de um Centro de Distribuição");
+        System.out.println("[8] - Mostrar Ordens de Pedido de um Centro de Distribuição");
+        System.out.println("[9] - Mostrar Histórico de Ordens de Pedido de um Centro de Distribuição");
         System.out.println("---------------------------------------------------------------");
     }
 
 
-    @Override
-    public void readOperation() {
-        showOperations();
-        while (true) {
-            try {
-                System.out.print("Escolha uma das operações: ");
-                int intUserInput = SCANNER.nextInt();
-                getOperation(intUserInput);
-                break;
-            } catch (InputMismatchException e) {
-                SCANNER.nextLine();
-                System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
-                System.out.println();
-            } catch (OperacaoInvalidaException e) {
-                SCANNER.nextLine();
-                System.out.printf("\n%s. Por favor, tente novamente.\n", e.getMessage());
-                System.out.println();
-            }
-        }
-    }
-
-
-    private void getOperation(int intUserInput) {
+    public void getOperation(int intUserInput) {
         switch (intUserInput) {
             case LIST_ALL_CENTROS_DISTRIBUICAO -> getCentrosDistribuicao();
             case GET_CENTRO_DISTRIBUICAO_BY_ID -> readCentroDistribuicaoId();
@@ -75,7 +60,64 @@ public class CentroDistribuicaoView implements TableView {
             case DELETE_CENTRO_DISTRIBUICAO -> deleteCentroDistribuicaoById();
             case INSERIR_DOACAO -> inserirDoacao();
             case GET_CENTRO_DISTRIBUICAO_DOACOES -> getCentroDistribuicaoDoacoes();
+            case GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO -> getCentroDistribuicaoOrdensPedido();
+            case CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO -> getCentroDistribuicaoHistoricoOrdensPedido();
             default -> throw new OperacaoInvalidaException(intUserInput);
+        }
+    }
+
+    private void getCentroDistribuicaoHistoricoOrdensPedido() {
+        System.out.println();
+        try {
+            int id = Validate.validateIntegerInput(SCANNER, "ID do Centro de Distribuição: ");
+            centroDistribuicaoService.findByIdOrException(id);
+            System.out.println();
+            centroDistribuicaoService.getCentroDistribuicaoOrdensPedido(id, OrdemPedidoHistorico.HISTORICO)
+                    .forEach(System.out::println);
+        } catch (CentroDeDistribuicaoNaoEncontradoException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void getCentroDistribuicaoOrdensPedido() {
+        try {
+            System.out.println();
+            int idCentroDeDistribuicao = Validate.validateIntegerInput(SCANNER, "ID do Centro de Distribuição: ");
+            var centroDistribuicao = centroDistribuicaoService.findByIdOrException(idCentroDeDistribuicao);
+            int centroId = centroDistribuicao.getId();
+            List<OrdemPedido> centroDistribuicaoOrdensPedido;
+            centroDistribuicaoOrdensPedido = centroDistribuicaoService.getCentroDistribuicaoOrdensPedido(centroId, OrdemPedidoHistorico.PENDENTE);
+            System.out.println();
+            if (centroDistribuicaoOrdensPedido.isEmpty()) {
+                System.out.println("Este Centro de Distribuição não possui nenhuma Ordem de Pedido pendente.");
+                return;
+            }
+            centroDistribuicaoOrdensPedido.forEach(System.out::println);
+
+            System.out.println();
+            String message = "Acatar a Ordem de Pedido feita por um dos abrigos? [true/false]: ";
+            if (!Validate.validateBooleanInput(SCANNER, message)) {
+                return;
+            }
+
+            System.out.println();
+            message = "ID da Ordem de Pedido: ";
+            OrdemPedido ordemPedido = ordemPedidoService.findByIdOrException(Validate.validateIntegerInput(SCANNER, message));
+            SCANNER.nextLine();
+            System.out.println();
+            OrdemPedidoInputStatus inputStatus = Validate.validateOrdemPedidoStatus(SCANNER);
+            ordemPedido.setStatus(inputStatus.getStatus());
+            if (inputStatus.equals(OrdemPedidoInputStatus.RECUSAR)) {
+                String errorMessage = "Motivo da recusa não pode ser nulo ou em branco. Tente novamente";
+                ordemPedido.setMotivo(Validate.validateString(SCANNER, "Motivo da Recusa: ", errorMessage));
+            }
+
+            ordemPedidoService.efetuarTransferenciaOrdemPedido(ordemPedido);
+
+
+        } catch (CentroDeDistribuicaoNaoEncontradoException | OrdemPedidoNaoEncontradaException |
+                 AbrigoNaoEncontradoException | DoacaoNaoEncontradaException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -85,6 +127,8 @@ public class CentroDistribuicaoView implements TableView {
             try {
                 System.out.print("ID do Centro de Distribuição: ");
                 var id = SCANNER.nextInt();
+                System.out.println("\nQuantidade de cada Categoria: ");
+                centroDistribuicaoService.centroDistribuicaoTotalDoacoes(id);
                 centroDistribuicaoService.listAllProdutosCentroDistribuicao(id).forEach(System.out::println);
                 break;
             } catch (InputMismatchException e) {
@@ -98,23 +142,26 @@ public class CentroDistribuicaoView implements TableView {
     }
 
     private void inserirDoacao() {
-        System.out.println();
         try {
-            System.out.print("ID do Centro de Distribuição em que a doação será feita: ");
-            var id = SCANNER.nextInt();
+            System.out.println();
+            String message = "ID do Centro de Distribuição em que a doação será feita: ";
+            var id = Validate.validateIntegerInput(SCANNER, message);
             centroDistribuicaoService.findByIdOrException(id);
             SCANNER.nextLine();
             System.out.println();
 
             var produto = new Doacao();
             produto.setArmazemId(centroDistribuicaoService.getCentroDistribuicaoArmazemId(id));
-            produto.setCategoria(validateProdutoCategoria());
-            produto.setItem(validateProdutoItem(produto.getCategoria()));
+            produto.setCategoria(Validate.validateProdutoCategoria(SCANNER));
+
+            centroDistribuicaoService.verificarTotalCategoriaCentroDistribuicao(id, produto.getCategoria());
+
+            produto.setItem(Validate.validateProdutoItem(SCANNER, produto.getCategoria()));
             if (produto.getCategoria().equals(Doacao.Categoria.ROUPA)) {
-                produto.setSexo(validateProdutoSexo());
-                produto.setTamanho(validateProdutoTamanho());
+                produto.setSexo(Validate.validateProdutoSexo(SCANNER));
+                produto.setTamanho(Validate.validateProdutoTamanho(SCANNER));
             }
-            produto.setQuantidade(validateProdutoQuantidade());
+            produto.setQuantidade(Validate.validateIntegerInRange(SCANNER, "Quantidade: ", 1, 1000));
             Doacao doacaoSalvo = centroDistribuicaoService.inserirDoacao(id, produto);
             System.out.println(doacaoSalvo);
         } catch (InputMismatchException e) {
@@ -125,95 +172,6 @@ public class CentroDistribuicaoView implements TableView {
         }
     }
 
-    protected Integer validateProdutoQuantidade() {
-        int quantidade;
-        while (true) {
-            System.out.print("Quantidade: ");
-            try {
-                quantidade = SCANNER.nextInt();
-                if (quantidade > 0 && quantidade <= 1000) {
-                    break;
-                }
-                System.out.println("Quantidade deve ser um valor de 1 a 1000");
-            } catch (InputMismatchException e) {
-                SCANNER.nextLine();
-                System.out.println("\nSão aceitos apenas valores do tipo inteiro. Por favor, tente novamente.");
-            }
-        }
-
-        return quantidade;
-    }
-
-    private Doacao.Tamanho validateProdutoTamanho() {
-        Doacao.Tamanho tamanho;
-        while (true) {
-            System.out.print("Tamanho [INFANTIL / PP / P / M / G / GG]: ");
-            String tamanhoInput = SCANNER.nextLine().toUpperCase();
-            try {
-                tamanho = Doacao.Tamanho.valueOf(tamanhoInput);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println("Item inválido. Tente novamente.");
-            }
-        }
-        return tamanho;
-    }
-
-    protected Doacao.Item validateProdutoItem(Doacao.Categoria categoria) {
-        Doacao.Item item;
-        while (true) {
-            printProdutoItem(categoria);
-            String itemInput = SCANNER.nextLine().toUpperCase();
-            try {
-                item = Doacao.Item.valueOf(itemInput);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println("Item inválido. Tente novamente.");
-            }
-        }
-        return item;
-    }
-
-    protected void printProdutoItem(Doacao.Categoria categoria) {
-        if (categoria.equals(Doacao.Categoria.ROUPA)) {
-            System.out.print("Item [AGASALHO / CAMISA]: ");
-        } else if (categoria.equals(Doacao.Categoria.HIGIENE)) {
-            System.out.print("Item [ESCOVA_DE_DENTES / PASTA_DE_DENTES / ABSORVENTE]: ");
-        } else  {
-            System.out.print("Item [ARROZ / FEIJAO / LEITE]: ");
-        }
-    }
-
-    private Doacao.Sexo validateProdutoSexo() {
-        Doacao.Sexo sexo;
-        while (true) {
-            System.out.print("Sexo [F / M]: ");
-            String sexoInput = SCANNER.nextLine().toUpperCase();
-            try {
-                sexo = Doacao.Sexo.valueOf(sexoInput);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println("Sexo inválido. Tente novamente.");
-            }
-        }
-
-        return sexo;
-    }
-
-    protected Doacao.Categoria validateProdutoCategoria() {
-        Doacao.Categoria categoria;
-        while (true) {
-            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO]: ");
-            String categoriaInput = SCANNER.nextLine().toUpperCase();
-            try {
-                categoria = Doacao.Categoria.valueOf(categoriaInput);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println("Categoria inválida. Tente novamente.");
-            }
-        }
-        return categoria;
-    }
 
     private void updateCentroDistribuicao() {
         System.out.println();
@@ -227,9 +185,11 @@ public class CentroDistribuicaoView implements TableView {
                     var centroDistribuicao = centroDistribuicaoService.findByIdOrException(id);
 
                     var newCentroDistribuicao = new CentroDistribuicao();
-                    newCentroDistribuicao.setNome(validateNome());
-                    newCentroDistribuicao.setEndereco(validateEndereco());
-                    newCentroDistribuicao.setCep(validateCEP());
+                    String nomeErrorMessage = "Nome do Centro de Distribuicao não pode ser nulo ou vazio. Tente novamente.";
+                    String enderecoErrorMessage = "Endereço do Centro de Distribuicao não pode ser nulo ou vazio. Tente novamente.";
+                    newCentroDistribuicao.setNome(Validate.validateString(SCANNER, "Nome: ", nomeErrorMessage));
+                    newCentroDistribuicao.setEndereco(Validate.validateString(SCANNER, "Endereço: ", enderecoErrorMessage));
+                    newCentroDistribuicao.setCep(Validate.validateCEP(SCANNER));
 
                     centroDistribuicao = centroDistribuicaoService.update(centroDistribuicao.getId(), newCentroDistribuicao);
                     System.out.println("\n" + centroDistribuicao);
@@ -267,65 +227,16 @@ public class CentroDistribuicaoView implements TableView {
         SCANNER.nextLine();
         System.out.println();
         var centroDistribuicao = new CentroDistribuicao();
-        centroDistribuicao.setNome(validateNome());
-        centroDistribuicao.setEndereco(validateEndereco());
-        centroDistribuicao.setCep(validateCEP());
+        String nomeErrorMessage = "Nome do Centro de Distribuicao não pode ser nulo ou vazio. Tente novamente.";
+        String enderecoErrorMessage = "Endereço do Centro de Distribuicao não pode ser nulo ou vazio. Tente novamente.";
+        centroDistribuicao.setNome(Validate.validateString(SCANNER, "Nome: ", nomeErrorMessage));
+        centroDistribuicao.setEndereco(Validate.validateString(SCANNER, "Endereço: ", enderecoErrorMessage));
+        centroDistribuicao.setCep(Validate.validateCEP(SCANNER));
 
 //        CentroDistribuicao savedCentroDistribuicao = centroDistribuicaoController.saveCentroDistribuicao(centroDistribuicao);
         CentroDistribuicao savedCentroDistribuicao = centroDistribuicaoService.save(centroDistribuicao);
 
         System.out.println(savedCentroDistribuicao);
-    }
-
-
-    private String validateNome() {
-        String nome;
-        while (true) {
-            System.out.print("Nome: ");
-            nome = SCANNER.nextLine();
-            if (nome != null && !(nome.isBlank())) {
-                break;
-            }
-            System.out.println();
-            System.out.println("Nome não pode ser nulo ou vazio. Tente novamente.");
-            System.out.println();
-        }
-
-        return nome;
-    }
-
-
-    private String validateCEP() {
-        String cep;
-        while (true) {
-            System.out.print("CEP: ");
-            cep = SCANNER.nextLine();
-            if ((cep != null) && !(cep.isBlank()) && (cep.length() == TAMANHO_CEP)) {
-                break;
-            }
-            System.out.println();
-            System.out.println("Cep não pode ser nulo ou vazio e deve conter 9 caracteres. Tente novamente.");
-            System.out.println();
-        }
-
-        return cep;
-    }
-
-
-    private String validateEndereco() {
-        String endereco;
-        while (true) {
-            System.out.print("Endereço: ");
-            endereco = SCANNER.nextLine();
-            if (endereco != null && !(endereco.isBlank())) {
-                break;
-            }
-            System.out.println();
-            System.out.println("Endereco não pode ser nulo ou vazio. Tente novamente.");
-            System.out.println();
-        }
-
-        return endereco;
     }
 
 

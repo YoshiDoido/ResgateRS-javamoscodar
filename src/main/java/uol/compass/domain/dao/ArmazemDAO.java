@@ -1,7 +1,7 @@
 package uol.compass.domain.dao;
 
-import uol.compass.domain.model.dto.TipoArmazem;
+import uol.compass.domain.dto.TipoArmazem;
 
 public interface ArmazemDAO {
-    void save(Integer referenceId, TipoArmazem tipo);
+    Integer save(Integer referenceId, TipoArmazem tipo);
 }

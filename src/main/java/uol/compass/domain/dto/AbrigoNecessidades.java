@@ -1,4 +1,4 @@
-package uol.compass.domain.model.dto;
+package uol.compass.domain.dto;
 
 
 import lombok.Getter;

@@ -91,7 +91,7 @@ public class Validate {
     public static Doacao.Categoria validateProdutoCategoria(Scanner scanner) {
         Doacao.Categoria categoria;
         while (true) {
-            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO]: ");
+            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO, LIMPEZA]: ");
             String categoriaInput = scanner.nextLine().toUpperCase();
             try {
                 categoria = Doacao.Categoria.valueOf(categoriaInput);
@@ -124,8 +124,10 @@ public class Validate {
             System.out.print("Item [AGASALHO / CAMISA]: ");
         } else if (categoria.equals(Doacao.Categoria.HIGIENE)) {
             System.out.print("Item [ESCOVA_DE_DENTES / PASTA_DE_DENTES / ABSORVENTE]: ");
-        } else  {
-            System.out.print("Item [ARROZ / FEIJAO / LEITE]: ");
+        } else if (categoria.equals(Doacao.Categoria.LIMPEZA)) {
+            System.out.print("Item [ALCOOL / AGUA_SANITARIA]: ");
+        }else  {
+            System.out.print("Item [ARROZ / FEIJAO / LEITE / AGUA]: ");
         }
     }
 

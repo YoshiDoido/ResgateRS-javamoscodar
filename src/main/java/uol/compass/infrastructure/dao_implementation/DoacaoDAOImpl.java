@@ -46,7 +46,7 @@ public class DoacaoDAOImpl implements DoacaoDAO {
 
     @Override
     public Doacao inserirDoacao(Integer id, Doacao doacao) {
-        // Query para caso o produto seja da categoria HIGIENE ou ALIMENTO
+        // Query para caso o produto seja da categoria HIGIENE, ALIMENTO OU LIMPEZA
         String sql = "INSERT INTO produtos(armazem_id, categoria, item, quantidade) VALUES(?, ?, ?, ?)";
         int totalDeSets = 4;
         if (doacao.getCategoria().equals(Doacao.Categoria.ROUPA)) {

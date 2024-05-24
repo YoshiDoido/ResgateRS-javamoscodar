@@ -23,10 +23,10 @@ public class CentroDistribuicaoView implements TableView {
     public static final int UPDATE_CENTRO_DISTRIBUICAO = 4;
     public static final int DELETE_CENTRO_DISTRIBUICAO = 5;
     public static final int INSERIR_DOACAO = 6;
-    public static final int GET_CENTRO_DISTRIBUICAO_DOACOES = 7;
-    public static final int GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO = 8;
-    public static final int CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO = 9;
-    public static final int APAGAR_DOACAO = 10;
+    public static final int APAGAR_DOACAO = 7;
+    public static final int GET_CENTRO_DISTRIBUICAO_DOACOES = 8;
+    public static final int GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO = 9;
+    public static final int CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO = 10;
 
     public static final int TAMANHO_CEP = 9;
 

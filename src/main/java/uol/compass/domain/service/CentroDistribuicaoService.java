@@ -149,4 +149,9 @@ public class CentroDistribuicaoService {
             );
         }
     }
+
+    public void removerDoacao(Integer doacaoId) {
+        doacaoDAO.removerDoacao(doacaoId);
+        log.info("Doação de id {} apagada com sucesso!", doacaoId);
+    }
 }

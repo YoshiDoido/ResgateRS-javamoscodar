@@ -26,6 +26,7 @@ public class CentroDistribuicaoView implements TableView {
     public static final int GET_CENTRO_DISTRIBUICAO_DOACOES = 7;
     public static final int GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO = 8;
     public static final int CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO = 9;
+    public static final int APAGAR_DOACAO = 10;
 
     public static final int TAMANHO_CEP = 9;
 
@@ -44,9 +45,11 @@ public class CentroDistribuicaoView implements TableView {
         System.out.println("[5] - Apagar um Centro de Distribuição");
         System.out.println();
         System.out.println("[6] - Inserir uma nova doação");
-        System.out.println("[7] - Mostrar todas doações de um Centro de Distribuição");
-        System.out.println("[8] - Mostrar Ordens de Pedido de um Centro de Distribuição");
-        System.out.println("[9] - Mostrar Histórico de Ordens de Pedido de um Centro de Distribuição");
+        System.out.println("[7] - Apagar uma nova doação");
+        System.out.println("[8] - Mostrar todas doações de um Centro de Distribuição");
+        System.out.println();
+        System.out.println("[9] - Mostrar Ordens de Pedido de um Centro de Distribuição");
+        System.out.println("[10] - Mostrar Histórico de Ordens de Pedido de um Centro de Distribuição");
         System.out.println("---------------------------------------------------------------");
     }
 
@@ -59,12 +62,20 @@ public class CentroDistribuicaoView implements TableView {
             case UPDATE_CENTRO_DISTRIBUICAO -> updateCentroDistribuicao();
             case DELETE_CENTRO_DISTRIBUICAO -> deleteCentroDistribuicaoById();
             case INSERIR_DOACAO -> inserirDoacao();
+            case APAGAR_DOACAO -> removerDoacao();
             case GET_CENTRO_DISTRIBUICAO_DOACOES -> getCentroDistribuicaoDoacoes();
             case GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO -> getCentroDistribuicaoOrdensPedido();
             case CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO -> getCentroDistribuicaoHistoricoOrdensPedido();
             default -> throw new OperacaoInvalidaException(intUserInput);
         }
     }
+
+    private void removerDoacao() {
+        System.out.println();
+        int doacaoId = Validate.validateIntegerInput(SCANNER, "ID da doação que será removida: ");
+        centroDistribuicaoService.removerDoacao(doacaoId);
+    }
+
 
     private void getCentroDistribuicaoHistoricoOrdensPedido() {
         System.out.println();

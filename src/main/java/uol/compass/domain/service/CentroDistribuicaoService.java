@@ -1,10 +1,10 @@
 package uol.compass.domain.service;
 
 import lombok.extern.slf4j.Slf4j;
-import uol.compass.domain.dto.OrdemPedidoHistorico;
 import uol.compass.domain.dao.ArmazemDAO;
 import uol.compass.domain.dao.CentroDistribuicaoDAO;
 import uol.compass.domain.dao.DoacaoDAO;
+import uol.compass.domain.dto.OrdemPedidoHistorico;
 import uol.compass.domain.dto.TipoArmazem;
 import uol.compass.domain.exception.CategoriaLimiteMaximoException;
 import uol.compass.domain.exception.CentroDeDistribuicaoNaoEncontradoException;
@@ -18,7 +18,6 @@ import uol.compass.infrastructure.dao_implementation.DoacaoDAOImpl;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -148,5 +147,10 @@ public class CentroDistribuicaoService {
                             CATEGORIA_ESTOQUE_MAXIMO)
             );
         }
+    }
+
+    public void removerDoacao(Integer doacaoId) {
+        doacaoDAO.removerDoacao(doacaoId);
+        log.info("Doação de id {} apagada com sucesso!", doacaoId);
     }
 }

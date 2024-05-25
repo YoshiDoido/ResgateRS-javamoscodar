@@ -12,7 +12,8 @@ public class Doacao {
     public enum Categoria {
         ALIMENTO("Item [ARROZ / FEIJAO / LEITE / AGUA]: "),
         HIGIENE("Item [ESCOVA_DE_DENTES / PASTA_DE_DENTES / ABSORVENTE]: "),
-        ROUPA("Item [AGASALHO / CAMISA]: ");
+        ROUPA("Item [AGASALHO / CAMISA]: "),
+        LIMPEZA("Item [ALCOOL / AGUA_SANITARIA]: ");
 
         private final String printItens;
 
@@ -20,7 +21,11 @@ public class Doacao {
             this.printItens = printItens;
         }
     }
-    public enum Item {ARROZ, FEIJAO, LEITE, SABONETE, ESCOVA_DE_DENTES, PASTA_DE_DENTES, ABSORVENTE, AGASALHO, CAMISA}
+    public enum Item {
+        ARROZ, FEIJAO, LEITE, AGUA, SABONETE, ESCOVA_DE_DENTES,
+        PASTA_DE_DENTES, ABSORVENTE, AGASALHO, CAMISA, ALCOOL, AGUA_SANITARIA
+    }
+
     public enum Sexo {F, M}
     public enum Tamanho {INFANTIL, PP, P, M, G, GG}
 

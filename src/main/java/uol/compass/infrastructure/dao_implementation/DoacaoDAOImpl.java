@@ -46,11 +46,11 @@ public class DoacaoDAOImpl implements DoacaoDAO {
 
     @Override
     public Doacao inserirDoacao(Integer id, Doacao doacao) {
-        // Query para caso o produto seja da categoria HIGIENE ou ALIMENTO
+        // Query para caso a categoria produto seja diferente de ROUPA
         String sql = "INSERT INTO produtos(armazem_id, categoria, item, quantidade) VALUES(?, ?, ?, ?)";
         int totalDeSets = 4;
         if (doacao.getCategoria().equals(Doacao.Categoria.ROUPA)) {
-            // Query para caso o produto seja da categoria roupa. Deixar as colunas 'sexo' e 'tamanho' por últlimo.
+            // Query para caso a categoriaproduto seja da categoria roupa. Deixar as colunas 'sexo' e 'tamanho' atrás de quantidade.
             totalDeSets = 6;
             sql = "INSERT INTO produtos(armazem_id, categoria, item, sexo, tamanho, quantidade) VALUES(?, ?, ?, ?, ?, ?)";
         }

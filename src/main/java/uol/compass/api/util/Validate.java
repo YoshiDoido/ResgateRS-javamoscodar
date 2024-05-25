@@ -91,7 +91,7 @@ public class Validate {
     public static Doacao.Categoria validateProdutoCategoria(Scanner scanner) {
         Doacao.Categoria categoria;
         while (true) {
-            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO]: ");
+            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO, LIMPEZA]: ");
             String categoriaInput = scanner.nextLine().toUpperCase();
             try {
                 categoria = Doacao.Categoria.valueOf(categoriaInput);

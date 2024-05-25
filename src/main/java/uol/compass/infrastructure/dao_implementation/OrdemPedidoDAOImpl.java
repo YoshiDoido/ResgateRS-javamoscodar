@@ -57,7 +57,8 @@ public class OrdemPedidoDAOImpl implements OrdemPedidoDAO {
     private void setOrdemPedidoValues(OrdemPedido ordemPedido, ResultSet rs) throws SQLException {
         ordemPedido.setId(rs.getInt("id"));
         ordemPedido.setCentroDistribuicaoId(rs.getInt("centro_distribuicao_id"));
-        ordemPedido.setAbrigoId(rs.getInt("abrigo_id"));
+        ordemPedido.setAbrigoId((Integer) rs.getObject("abrigo_id"));
+        ordemPedido.setCentroDistribuicaoEnvioId((Integer) rs.getObject("centro_distribuicao_envio"));
         ordemPedido.setItem(Doacao.Item.valueOf(rs.getString("item")));
         ordemPedido.setStatus(OrdemPedido.Status.valueOf(rs.getString("status")));
         ordemPedido.setQuantidade(rs.getInt("quantidade"));
@@ -68,11 +69,19 @@ public class OrdemPedidoDAOImpl implements OrdemPedidoDAO {
     public <S extends OrdemPedido> S save(S entity) {
         String sql = "INSERT INTO ordem_pedidos(centro_distribuicao_id, abrigo_id, item, STATUS, quantidade, categoria) " +
                 "VALUES(?,?,?,?,?,?)";
+        if (entity.getCentroDistribuicaoEnvioId() != null) {
+            sql = "INSERT INTO ordem_pedidos(centro_distribuicao_id, centro_distribuicao_envio, item, STATUS, quantidade, categoria) " +
+                    "VALUES(?,?,?,?,?,?)";
+        }
         try(Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             try(PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 ps.setInt(1, entity.getCentroDistribuicaoId());
-                ps.setInt(2, entity.getAbrigoId());
+                if (entity.getCentroDistribuicaoEnvioId() != null) {
+                    ps.setInt(2, entity.getCentroDistribuicaoEnvioId());
+                } else {
+                    ps.setInt(2, entity.getAbrigoId());
+                }
                 ps.setString(3, entity.getItem().name());
                 ps.setString(4, "PENDENTE");
                 ps.setInt(5, entity.getQuantidade());
@@ -145,6 +154,16 @@ public class OrdemPedidoDAOImpl implements OrdemPedidoDAO {
         } catch (SQLException e) {
             throw new RepositoryException("Falha ao apagar Ordem de Pedido", e);
         }
+    }
+
+    private Integer getCentroEnvioId(ResultSet rs) throws SQLException {
+        int resultSetCentroEnvioId = rs.getInt("centro_distribuicao_envio");
+        return resultSetCentroEnvioId == 0 ? null : resultSetCentroEnvioId;
+    }
+
+    private Integer getAbrigoId(ResultSet rs) throws SQLException {
+        int resultSetAbrigoId = rs.getInt("abrigo_id");
+        return resultSetAbrigoId == 0 ? null : resultSetAbrigoId;
     }
 
 }

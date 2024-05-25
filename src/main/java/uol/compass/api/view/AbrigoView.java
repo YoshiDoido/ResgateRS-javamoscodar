@@ -131,7 +131,8 @@ public class AbrigoView implements TableView {
             }
             centroslist.forEach(System.out::println);
             System.out.println();
-            if (!solicitarOrdemPedido()) {
+            SCANNER.nextLine();
+            if (!Validate.solicitarOrdemPedido(SCANNER)) {
                 return;
             }
             SCANNER.nextLine();
@@ -173,19 +174,6 @@ public class AbrigoView implements TableView {
         }
     }
 
-
-    private boolean solicitarOrdemPedido() {
-        SCANNER.nextLine();
-        while (true) {
-            try {
-                System.out.print("Solicitar Ordem de Pedido a um dos Centros de Distribuição? [true/false]: ");
-                return SCANNER.nextBoolean();
-            } catch (InputMismatchException e) {
-                SCANNER.nextLine();
-                System.out.println("\nSão aceitos apenas valores do tipo booleano. Por favor, tente novamente.");
-            }
-        }
-    }
 
     public void getAbrigo() {
         System.out.println();

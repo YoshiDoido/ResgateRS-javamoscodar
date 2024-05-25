@@ -12,6 +12,7 @@ public class OrdemPedido {
 
     private Integer id;
     private Integer centroDistribuicaoId;
+    private Integer centroDistribuicaoEnvioId;
     private Integer abrigoId;
     private Doacao.Item item;
     private Status status;

@@ -159,17 +159,17 @@ public class CentroDistribuicaoDAOImpl implements CentroDistribuicaoDAO {
     @Override
     public List<OrdemPedido> getCentroDistribuicaoOrdensPedido(Integer id, OrdemPedidoHistorico status) {
         List<OrdemPedido> ordensPedido = new ArrayList<>();
-//        String sql = getSqlQueryOrdensPedido(status);
-        String sql = "SELECT op.* FROM centro_distribuicao cd INNER JOIN ordem_pedidos op " +
-                "ON (cd.id = op.centro_distribuicao_id) WHERE cd.id = ? AND status != 'PENDENTE'";
+        String sql = getSqlQueryOrdensPedido(status);
         try(Connection conn = DatabaseConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
+            ps.setInt(2, id);
             try(ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     var ordemPedido = new OrdemPedido();
                     ordemPedido.setId(rs.getInt("id"));
                     ordemPedido.setCentroDistribuicaoId(rs.getInt("centro_distribuicao_id"));
-                    ordemPedido.setAbrigoId(rs.getInt("abrigo_id"));
+                    ordemPedido.setAbrigoId((Integer) rs.getObject("abrigo_id"));
+                    ordemPedido.setCentroDistribuicaoEnvioId((Integer) rs.getObject("centro_distribuicao_envio"));
                     ordemPedido.setItem(Doacao.Item.valueOf(rs.getString("item")));
                     ordemPedido.setStatus(OrdemPedido.Status.valueOf(rs.getString("status")));
                     ordemPedido.setMotivo(rs.getString("motivo"));
@@ -185,12 +185,15 @@ public class CentroDistribuicaoDAOImpl implements CentroDistribuicaoDAO {
         return ordensPedido;
     }
 
+
     private String getSqlQueryOrdensPedido(OrdemPedidoHistorico ordemPedidoHistorico) {
         String sql = "SELECT op.* FROM centro_distribuicao cd INNER JOIN ordem_pedidos op " +
-                "ON (cd.id = op.centro_distribuicao_id) WHERE cd.id = ? AND status = 'PENDENTE'";
+                "ON (cd.id = op.centro_distribuicao_id) WHERE (cd.id = ? OR op.centro_distribuicao_envio = ?) " +
+                "AND op.status = 'PENDENTE'";
         if (ordemPedidoHistorico.equals(OrdemPedidoHistorico.HISTORICO)) {
             sql = "SELECT op.* FROM centro_distribuicao cd INNER JOIN ordem_pedidos op " +
-                    "ON (cd.id = op.centro_distribuicao_id) WHERE cd.id = ? AND status != 'PENDENTE'";
+                    "ON (cd.id = op.centro_distribuicao_id) WHERE (cd.id = ? OR op.centro_distribuicao_envio = ?) " +
+                    "AND op.status != 'PENDENTE'";
         }
         return sql;
     }

@@ -199,16 +199,16 @@ INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VA
 
 
 INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
-('ROUPA', 'AGASALHO', 'M', 'M', 15, 7),
-('ROUPA', 'AGASALHO', 'F', 'P', 15, 7),
-('ROUPA', 'CAMISA', 'M', 'P', 10, 7),
-('ROUPA', 'CAMISA', 'F', 'M', 10, 7),
-('HIGIENE', 'SABONETE', NULL, NULL, 15, 7),
-('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 10, 7),
-('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 10, 7),
-('HIGIENE', 'ABSORVENTE', NULL, NULL, 15, 7),
-('ALIMENTO', 'ARROZ', NULL, NULL, 20, 7),
-('ALIMENTO', 'FEIJAO', NULL, NULL, 15, 7),
-('ALIMENTO', 'LEITE', NULL, NULL, 15, 7),
-('ALIMENTO', 'AGUA', NULL, NULL, 82, 7),
-('LIMPEZA', 'ALCOOL', NULL, NULL, 7, 7);
+('ROUPA', 'AGASALHO', 'M', 'M', 15, 8),
+('ROUPA', 'AGASALHO', 'F', 'P', 15, 8),
+('ROUPA', 'CAMISA', 'M', 'P', 10, 8),
+('ROUPA', 'CAMISA', 'F', 'M', 10, 8),
+('HIGIENE', 'SABONETE', NULL, NULL, 15, 8),
+('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 10, 8),
+('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 10, 8),
+('HIGIENE', 'ABSORVENTE', NULL, NULL, 15, 8),
+('ALIMENTO', 'ARROZ', NULL, NULL, 20, 8),
+('ALIMENTO', 'FEIJAO', NULL, NULL, 15, 8),
+('ALIMENTO', 'LEITE', NULL, NULL, 15, 8),
+('ALIMENTO', 'AGUA', NULL, NULL, 82, 8),
+('LIMPEZA', 'ALCOOL', NULL, NULL, 7, 8);

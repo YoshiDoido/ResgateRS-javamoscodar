@@ -91,7 +91,7 @@ public class Validate {
     public static Doacao.Categoria validateProdutoCategoria(Scanner scanner) {
         Doacao.Categoria categoria;
         while (true) {
-            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO]: ");
+            System.out.print("Categoria [ROUPA, HIGIENE, ALIMENTO, LIMPEZA]: ");
             String categoriaInput = scanner.nextLine().toUpperCase();
             try {
                 categoria = Doacao.Categoria.valueOf(categoriaInput);
@@ -107,7 +107,7 @@ public class Validate {
     public static Doacao.Item validateProdutoItem(Scanner scanner, Doacao.Categoria categoria) {
         Doacao.Item item;
         while (true) {
-            printProdutoItem(categoria);
+            System.out.print(categoria.getPrintItens());
             String itemInput = scanner.nextLine().toUpperCase();
             try {
                 item = Doacao.Item.valueOf(itemInput);
@@ -119,15 +119,6 @@ public class Validate {
         return item;
     }
 
-    private static void printProdutoItem(Doacao.Categoria categoria) {
-        if (categoria.equals(Doacao.Categoria.ROUPA)) {
-            System.out.print("Item [AGASALHO / CAMISA]: ");
-        } else if (categoria.equals(Doacao.Categoria.HIGIENE)) {
-            System.out.print("Item [ESCOVA_DE_DENTES / PASTA_DE_DENTES / ABSORVENTE]: ");
-        } else  {
-            System.out.print("Item [ARROZ / FEIJAO / LEITE]: ");
-        }
-    }
 
     public static Doacao.Tamanho validateProdutoTamanho(Scanner scanner) {
         Doacao.Tamanho tamanho;
@@ -169,6 +160,19 @@ public class Validate {
                 return OrdemPedidoInputStatus.valueOf(scanner.nextLine().toUpperCase());
             } catch (IllegalArgumentException e) {
                 System.out.println("\nSão aceitos apenas os valores do tipo String [ACEITAR / RECUSAR]. Tente novamente.");
+            }
+        }
+    }
+
+
+    public static boolean solicitarOrdemPedido(Scanner scanner) {
+        while (true) {
+            try {
+                System.out.print("Solicitar Ordem de Pedido a um dos Centros de Distribuição? [true/false]: ");
+                return scanner.nextBoolean();
+            } catch (InputMismatchException e) {
+                scanner.nextLine();
+                System.out.println("\nSão aceitos apenas valores do tipo booleano. Por favor, tente novamente.");
             }
         }
     }

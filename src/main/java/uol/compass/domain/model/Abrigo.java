@@ -7,7 +7,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Abrigo {
+public class Abrigo implements Doavel{
 
     private Integer id;
     private String nome;

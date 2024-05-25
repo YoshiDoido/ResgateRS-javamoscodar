@@ -1,13 +1,15 @@
 package uol.compass.api.view;
 
 import uol.compass.api.exception.OperacaoInvalidaException;
+import uol.compass.api.util.Validate;
+import uol.compass.domain.dto.AbrigoNecessidades;
 import uol.compass.domain.dto.OrdemPedidoHistorico;
 import uol.compass.domain.dto.OrdemPedidoInputStatus;
-import uol.compass.api.util.Validate;
 import uol.compass.domain.exception.*;
 import uol.compass.domain.model.CentroDistribuicao;
 import uol.compass.domain.model.Doacao;
 import uol.compass.domain.model.OrdemPedido;
+import uol.compass.domain.service.AbrigoService;
 import uol.compass.domain.service.CentroDistribuicaoService;
 import uol.compass.domain.service.OrdemPedidoService;
 
@@ -23,10 +25,11 @@ public class CentroDistribuicaoView implements TableView {
     public static final int UPDATE_CENTRO_DISTRIBUICAO = 4;
     public static final int DELETE_CENTRO_DISTRIBUICAO = 5;
     public static final int INSERIR_DOACAO = 6;
-    public static final int APAGAR_DOACAO = 7;
-    public static final int GET_CENTRO_DISTRIBUICAO_DOACOES = 8;
-    public static final int GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO = 9;
-    public static final int CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO = 10;
+    public static final int LISTAR_NECESSIDADES = 7;
+    public static final int APAGAR_DOACAO = 8;
+    public static final int GET_CENTRO_DISTRIBUICAO_DOACOES = 9;
+    public static final int GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO = 10;
+    public static final int CENTRO_DISTRIBUICAO_HISTORICO_ORDENS_PEDIDO = 11;
 
     public static final int TAMANHO_CEP = 9;
 
@@ -34,6 +37,7 @@ public class CentroDistribuicaoView implements TableView {
 
     private final CentroDistribuicaoService centroDistribuicaoService = new CentroDistribuicaoService();
     private final OrdemPedidoService ordemPedidoService = new OrdemPedidoService();
+    private final AbrigoService abrigoService = new AbrigoService();
 
     public void showOperations() {
         System.out.println();
@@ -45,11 +49,12 @@ public class CentroDistribuicaoView implements TableView {
         System.out.println("[5] - Apagar um Centro de Distribuição");
         System.out.println();
         System.out.println("[6] - Inserir uma nova doação");
-        System.out.println("[7] - Apagar uma nova doação");
-        System.out.println("[8] - Mostrar todas doações de um Centro de Distribuição");
+        System.out.println("[7] - Listar Necessidades - Transferência entre Centros");
+        System.out.println("[8] - Apagar uma nova doação");
+        System.out.println("[9] - Mostrar todas doações de um Centro de Distribuição");
         System.out.println();
-        System.out.println("[9] - Mostrar Ordens de Pedido de um Centro de Distribuição");
-        System.out.println("[10] - Mostrar Histórico de Ordens de Pedido de um Centro de Distribuição");
+        System.out.println("[10] - Mostrar Ordens de Pedido de um Centro de Distribuição");
+        System.out.println("[11] - Mostrar Histórico de Ordens de Pedido de um Centro de Distribuição");
         System.out.println("---------------------------------------------------------------");
     }
 
@@ -62,6 +67,7 @@ public class CentroDistribuicaoView implements TableView {
             case UPDATE_CENTRO_DISTRIBUICAO -> updateCentroDistribuicao();
             case DELETE_CENTRO_DISTRIBUICAO -> deleteCentroDistribuicaoById();
             case INSERIR_DOACAO -> inserirDoacao();
+            case LISTAR_NECESSIDADES -> listarNecessidades();
             case APAGAR_DOACAO -> removerDoacao();
             case GET_CENTRO_DISTRIBUICAO_DOACOES -> getCentroDistribuicaoDoacoes();
             case GET_CENTRO_DISTRIBUICAO_ORDENS_PEDIDO -> getCentroDistribuicaoOrdensPedido();
@@ -114,6 +120,7 @@ public class CentroDistribuicaoView implements TableView {
             System.out.println();
             message = "ID da Ordem de Pedido: ";
             OrdemPedido ordemPedido = ordemPedidoService.findByIdOrException(Validate.validateIntegerInput(SCANNER, message));
+            System.out.println(ordemPedido);
             SCANNER.nextLine();
             System.out.println();
             OrdemPedidoInputStatus inputStatus = Validate.validateOrdemPedidoStatus(SCANNER);
@@ -124,7 +131,6 @@ public class CentroDistribuicaoView implements TableView {
             }
 
             ordemPedidoService.efetuarTransferenciaOrdemPedido(ordemPedido);
-
 
         } catch (CentroDeDistribuicaoNaoEncontradoException | OrdemPedidoNaoEncontradaException |
                  AbrigoNaoEncontradoException | DoacaoNaoEncontradaException e) {
@@ -150,6 +156,64 @@ public class CentroDistribuicaoView implements TableView {
                 break;
             }
         }
+    }
+
+    private void listarNecessidades() {
+        System.out.println();
+        try {
+            String message = "ID do Centro de Distribuição: ";
+            int centroDistribuicaoIdInput = Validate.validateIntegerInput(SCANNER, message);
+            CentroDistribuicao centroDistribuicao = centroDistribuicaoService.findByIdOrException(centroDistribuicaoIdInput);
+            var abrigoNecessidades = new AbrigoNecessidades();
+            SCANNER.nextLine();
+            System.out.println();
+            abrigoNecessidades.setCategoria(Validate.validateProdutoCategoria(SCANNER));
+
+            centroDistribuicaoService.verificarTotalCategoriaCentroDistribuicao(centroDistribuicao.getId(), abrigoNecessidades.getCategoria());
+
+            abrigoNecessidades.setItem(Validate.validateProdutoItem(SCANNER, abrigoNecessidades.getCategoria()));
+            abrigoNecessidades.setQuantidade(Validate.validateIntegerInRange(SCANNER, "Quantidade: ", 1, 1000));
+            System.out.println();
+            var centrosList = abrigoService.listarNecessidades(abrigoNecessidades);
+            if (centrosList.isEmpty()) {
+                System.out.println("Nenhum Centro de Distribuicao pode atender as necessidades no momento. Tente novamente mais tarde.");
+                return;
+            }
+            centrosList.forEach(centro -> {
+                if (!centro.centroDistribuicaoId().equals(centroDistribuicaoIdInput)) {
+                    System.out.println(centro);
+                }
+            });
+            System.out.println();
+            SCANNER.nextLine();
+            if (!Validate.solicitarOrdemPedido(SCANNER)) {
+                return;
+            }
+            SCANNER.nextLine();
+            fazerOrdemPedido(centroDistribuicao, abrigoNecessidades);
+        } catch (CentroDeDistribuicaoNaoEncontradoException | CategoriaLimiteMaximoException | IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+
+    private void fazerOrdemPedido(CentroDistribuicao centroDistribuicao, AbrigoNecessidades abrigoNecessidades) {
+        System.out.println();
+        String message = "ID do Centro de Distribuição que deseja solicitar necessidades: ";
+        int centroDistribuicaoId = Validate.validateIntegerInput(SCANNER, message);
+        if (centroDistribuicaoId == centroDistribuicao.getId()) {
+            throw new IllegalArgumentException("Centro de Distribuição não pode solicitar uma Ordem de Pedido para ele mesmo");
+        }
+        CentroDistribuicao centroDistribuicaoReceberOrdem;
+        centroDistribuicaoReceberOrdem = centroDistribuicaoService.findByIdOrException(centroDistribuicaoId);
+
+        var ordemPedido = new OrdemPedido();
+        ordemPedido.setCentroDistribuicaoId(centroDistribuicaoReceberOrdem.getId());
+        ordemPedido.setCentroDistribuicaoEnvioId(centroDistribuicao.getId());
+        ordemPedido.setItem(abrigoNecessidades.getItem());
+        ordemPedido.setQuantidade(abrigoNecessidades.getQuantidade());
+        ordemPedido.setCategoria(abrigoNecessidades.getCategoria());
+        System.out.println("\n" + ordemPedidoService.save(ordemPedido));
     }
 
     private void inserirDoacao() {

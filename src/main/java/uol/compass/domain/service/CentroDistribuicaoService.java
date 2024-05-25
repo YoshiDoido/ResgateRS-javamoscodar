@@ -23,7 +23,7 @@ import java.util.Objects;
 @Slf4j
 public class CentroDistribuicaoService {
 
-    public static final int CATEGORIA_ESTOQUE_MAXIMO = 1000;
+    public static final int CATEGORIA_CENTRO_ESTOQUE_MAXIMO = 1000;
 
     private final CentroDistribuicaoDAO centroDistribuicaoDAO = new CentroDistribuicaoDAOImpl();
     private final ArmazemDAO armazemDAO = new ArmazemDAOImpl();
@@ -68,7 +68,7 @@ public class CentroDistribuicaoService {
         int totalCategoria = doacaoDAO.totalCategoria(armazemId, doacao.getCategoria());
         int total = totalCategoria + doacao.getQuantidade();
         
-        if (total > CATEGORIA_ESTOQUE_MAXIMO) {
+        if (total > CATEGORIA_CENTRO_ESTOQUE_MAXIMO) {
             ajusteDoacaoQuantidade(doacao, total, doacao.getCategoria());
         }
 
@@ -92,7 +92,7 @@ public class CentroDistribuicaoService {
     }
 
     private void ajusteDoacaoQuantidade(Doacao doacao, int total, Doacao.Categoria doacao1) {
-        int novoValorDoacao = doacao.getQuantidade() - (total - CATEGORIA_ESTOQUE_MAXIMO);
+        int novoValorDoacao = doacao.getQuantidade() - (total - CATEGORIA_CENTRO_ESTOQUE_MAXIMO);
         int valorAnterorDoacao = doacao.getQuantidade();
         doacao.setQuantidade(novoValorDoacao);
         System.out.printf("\nCategoria %s do Centro de Distribuição atingiu seu limite máximo." +
@@ -141,10 +141,10 @@ public class CentroDistribuicaoService {
     public void verificarTotalCategoriaCentroDistribuicao(Integer centroId, Doacao.Categoria categoria) {
         int armazemId = getCentroDistribuicaoArmazemId(centroId);
         int totalCategoria = doacaoDAO.totalCategoria(armazemId, categoria);
-        if (totalCategoria >= CATEGORIA_ESTOQUE_MAXIMO) {
+        if (totalCategoria >= CATEGORIA_CENTRO_ESTOQUE_MAXIMO) {
             throw new CategoriaLimiteMaximoException(
                     String.format("Categoria %s atingiu o seu limite máximo (%d).", categoria,
-                            CATEGORIA_ESTOQUE_MAXIMO)
+                            CATEGORIA_CENTRO_ESTOQUE_MAXIMO)
             );
         }
     }

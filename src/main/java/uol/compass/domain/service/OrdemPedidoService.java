@@ -4,10 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import uol.compass.domain.dao.DoacaoDAO;
 import uol.compass.domain.dao.OrdemPedidoDAO;
 import uol.compass.domain.exception.OrdemPedidoNaoEncontradaException;
-import uol.compass.domain.model.Doacao;
-import uol.compass.domain.model.OrdemPedido;
+import uol.compass.domain.model.*;
 import uol.compass.infrastructure.dao_implementation.DoacaoDAOImpl;
 import uol.compass.infrastructure.dao_implementation.OrdemPedidoDAOImpl;
+
+import static uol.compass.domain.service.CentroDistribuicaoService.CATEGORIA_CENTRO_ESTOQUE_MAXIMO;
 
 import java.util.List;
 import java.util.Objects;
@@ -53,6 +54,10 @@ public class OrdemPedidoService {
 
 
     public void efetuarTransferenciaOrdemPedido(OrdemPedido ordemPedido) {
+        Doavel target;
+        int targetArmazemId;
+        int estoqueMaximo;
+
         if (ordemPedido.getStatus().equals(OrdemPedido.Status.RECUSADO)) {
             var updatedOrdem = ordemPedidoDAO.update(ordemPedido.getId(), ordemPedido);
             log.info("Ordem pedido de id {} atualizada com sucesso!", updatedOrdem.getId());
@@ -62,14 +67,21 @@ public class OrdemPedidoService {
         var centroDistribuicao = centroDistribuicaoService.findByIdOrException(ordemPedido.getCentroDistribuicaoId());
         var doacao = centroDistribuicaoService.getDoacaoByCentroDistribuicaoIdAndItem(centroDistribuicao.getId(), ordemPedido.getItem());
 
-        var abrigo = abrigoService.findByIdOrException(ordemPedido.getAbrigoId());
-        var abrigoArmazemId = abrigoService.getAbrigoArmazemId(abrigo.getId());
+        if (ordemPedido.getCentroDistribuicaoEnvioId() != null) {
+            target = centroDistribuicaoService.findByIdOrException(ordemPedido.getCentroDistribuicaoEnvioId());
+            targetArmazemId = centroDistribuicaoService.getCentroDistribuicaoArmazemId(target.getId());
+            estoqueMaximo = CATEGORIA_CENTRO_ESTOQUE_MAXIMO;
+        } else {
+            target = abrigoService.findByIdOrException(ordemPedido.getAbrigoId());
+            targetArmazemId = abrigoService.getAbrigoArmazemId(target.getId());
+            estoqueMaximo = CATEGORIA_ABRIGO_ESTOQUE_MAXIMO;
+        }
 
-        int totalCategoria = doacaoDAO.totalCategoria(abrigoArmazemId, ordemPedido.getCategoria());
+        int totalCategoria = doacaoDAO.totalCategoria(targetArmazemId, ordemPedido.getCategoria());
 
-        if (totalCategoria + ordemPedido.getQuantidade() > CATEGORIA_ABRIGO_ESTOQUE_MAXIMO) {
-            ordemPedido.setQuantidade((totalCategoria + ordemPedido.getQuantidade()) - CATEGORIA_ABRIGO_ESTOQUE_MAXIMO);
-            System.out.printf("Categoria %s atingiu seu limite máximo. Quantidade de Ordem de Pedido alterado.\n", ordemPedido.getCategoria());
+        if (totalCategoria + ordemPedido.getQuantidade() > estoqueMaximo) {
+            ordemPedido.setQuantidade((totalCategoria + ordemPedido.getQuantidade()) - estoqueMaximo);
+            System.out.printf("Categoria %s do Abrigo atingiu seu limite máximo. Quantidade de Ordem de Pedido alterado.\n", ordemPedido.getCategoria());
         }
 
         if (doacao.getQuantidade() < ordemPedido.getQuantidade()) {
@@ -77,13 +89,13 @@ public class OrdemPedidoService {
         }
 
         var doacaoParaOAbrigo = createNewDoacaoObject(ordemPedido, doacao);
-        doacaoParaOAbrigo.setArmazemId(abrigoArmazemId);
+        doacaoParaOAbrigo.setArmazemId(targetArmazemId);
 
         doacao.setQuantidade(doacao.getQuantidade() - ordemPedido.getQuantidade());
         doacaoDAO.atualizarDoacao(doacao.getId(), doacao);
         log.info("Doação de id {} atualizada com sucesso! {}", doacao.getId(), doacao);
 
-        doacaoParaOAbrigo = doacaoDAO.inserirDoacao(abrigoArmazemId, doacaoParaOAbrigo);
+        doacaoParaOAbrigo = doacaoDAO.inserirDoacao(targetArmazemId, doacaoParaOAbrigo);
         log.info("Doação de id {} inserida com sucesso! {}", doacaoParaOAbrigo.getId(), doacaoParaOAbrigo);
 
         update(ordemPedido.getId(), ordemPedido);
@@ -93,6 +105,7 @@ public class OrdemPedidoService {
             log.info("Doação de id {} foi apagada com sucesso", doacao.getId());
         }
     }
+
 
     private Doacao createNewDoacaoObject(OrdemPedido ordemPedido, Doacao doacao) {
         var doacaoParaOAbrigo = new Doacao();

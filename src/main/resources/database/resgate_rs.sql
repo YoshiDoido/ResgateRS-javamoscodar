@@ -2,68 +2,68 @@ CREATE DATABASE if NOT EXISTS resgate_rs;
 USE resgate_rs;
 
 CREATE TABLE centro_distribuicao(
-	id INT NOT NULL AUTO_INCREMENT,
-	nome VARCHAR(100) NOT NULL,
-	endereco VARCHAR(300) NOT NULL,
-	cep VARCHAR(9) NOT NULL,
-	
-	PRIMARY KEY(id)
+    id INT NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    endereco VARCHAR(300) NOT NULL,
+    cep VARCHAR(9) NOT NULL,
+
+    PRIMARY KEY(id)
 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
 
 
-CREATE TABLE abrigos ( 
-	id INT AUTO_INCREMENT PRIMARY KEY, 
-	nome VARCHAR(50) NOT NULL, 
-	endereco VARCHAR(100) NOT NULL, 
-	cep VARCHAR(10) NOT NULL, 
-	cidade VARCHAR(20) NOT NULL, 
-	responsavel VARCHAR(50) NOT NULL, 
-	telefone VARCHAR(20) NOT NULL, 
-	email VARCHAR(50) NOT NULL, 
-	capacidade INT NOT NULL, 
-	ocupacao INT NOT NULL 
-	
+CREATE TABLE abrigos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+    endereco VARCHAR(100) NOT NULL,
+    cep VARCHAR(10) NOT NULL,
+    cidade VARCHAR(20) NOT NULL,
+    responsavel VARCHAR(50) NOT NULL,
+    telefone VARCHAR(20) NOT NULL,
+    email VARCHAR(50) NOT NULL,
+    capacidade INT NOT NULL,
+    ocupacao INT NOT NULL
+
 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
 
 
 CREATE TABLE armazem (
-	id INT AUTO_INCREMENT,
-	centro_distribuicao_id INT NULL,
-	abrigo_id INT NULL,
-	
-	PRIMARY KEY (id),
-	FOREIGN KEY (centro_distribuicao_id) REFERENCES centro_distribuicao(id) ON DELETE CASCADE,
-	FOREIGN KEY (abrigo_id) REFERENCES abrigos(id) ON DELETE CASCADE
+    id INT AUTO_INCREMENT,
+    centro_distribuicao_id INT NULL,
+    abrigo_id INT NULL,
+
+    PRIMARY KEY (id),
+    FOREIGN KEY (centro_distribuicao_id) REFERENCES centro_distribuicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (abrigo_id) REFERENCES abrigos(id) ON DELETE CASCADE
 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
 
 
 CREATE TABLE produtos (
-	id INT  NOT NULL AUTO_INCREMENT,
+    id INT  NOT NULL AUTO_INCREMENT,
     categoria ENUM('ALIMENTO', 'HIGIENE', 'ROUPA', 'LIMPEZA') NOT NULL,
     item ENUM('ARROZ', 'FEIJAO', 'LEITE', 'AGUA', 'SABONETE', 'ESCOVA_DE_DENTES', 'PASTA_DE_DENTES', 'ABSORVENTE', 'AGASALHO', 'CAMISA', 'ALCOOL', 'AGUA_SANITARIA') NOT NULL,
-	sexo ENUM('F', 'M'),
-	tamanho ENUM('INFANTIL', 'PP', 'P', 'M', 'G', 'GG'),
-	quantidade INT NOT NULL,
-	armazem_id INT NOT NULL,
-	
-	PRIMARY KEY (id),
-	FOREIGN KEY (armazem_id) REFERENCES armazem(id) ON DELETE CASCADE
-)ENGINE=INNODB DEFAULT CHARSET=UTF8MB4; 
+    sexo ENUM('F', 'M'),
+    tamanho ENUM('INFANTIL', 'PP', 'P', 'M', 'G', 'GG'),
+    quantidade INT NOT NULL,
+    armazem_id INT NOT NULL,
+
+    PRIMARY KEY (id),
+    FOREIGN KEY (armazem_id) REFERENCES armazem(id) ON DELETE CASCADE
+)ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
 
 
 CREATE TABLE ordem_pedidos(
-	id INT NOT NULL AUTO_INCREMENT,
-	centro_distribuicao_id INT NOT NULL,
-	abrigo_id INT NOT NULL,
-	categoria ENUM('ALIMENTO', 'HIGIENE', 'ROUPA', 'LIMPEZA') NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT,
+    centro_distribuicao_id INT NOT NULL,
+    abrigo_id INT NOT NULL,
+    categoria ENUM('ALIMENTO', 'HIGIENE', 'ROUPA', 'LIMPEZA') NOT NULL,
     item ENUM('ARROZ', 'FEIJAO', 'LEITE', 'AGUA', 'SABONETE', 'ESCOVA_DE_DENTES', 'PASTA_DE_DENTES', 'ABSORVENTE', 'AGASALHO', 'CAMISA', 'ALCOOL', 'AGUA_SANITARIA') NOT NULL,
-	quantidade INT NOT NULL,
-	status ENUM('ACEITO', 'RECUSADO', 'PENDENTE') NOT NULL,
-	motivo VARCHAR(255) NULL,
-	
-	PRIMARY KEY (id),
-	FOREIGN KEY (centro_distribuicao_id) REFERENCES centro_distribuicao(id) ON DELETE CASCADE,
-	FOREIGN KEY (abrigo_id) REFERENCES abrigos(id) ON DELETE CASCADE	
+    quantidade INT NOT NULL,
+    status ENUM('ACEITO', 'RECUSADO', 'PENDENTE') NOT NULL,
+    motivo VARCHAR(255) NULL,
+
+    PRIMARY KEY (id),
+    FOREIGN KEY (centro_distribuicao_id) REFERENCES centro_distribuicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (abrigo_id) REFERENCES abrigos(id) ON DELETE CASCADE
 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
 
 
@@ -134,81 +134,81 @@ INSERT INTO armazem (abrigo_id) VALUES
 
 
 INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
-('ROUPA', 'AGASALHO', 'M', 'G', 20, 1),
-('ROUPA', 'AGASALHO', 'F', 'P', 20, 1),
-('ROUPA', 'CAMISA', 'M', 'G', 10, 1),
-('ROUPA', 'CAMISA', 'F', 'M', 10, 1),
-('HIGIENE', 'SABONETE', NULL, NULL, 20, 1),
-('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 15, 1),
-('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 15, 1),
-('HIGIENE', 'ABSORVENTE', NULL, NULL, 10, 1),
-('ALIMENTO', 'ARROZ', NULL, NULL, 20, 1),
-('ALIMENTO', 'FEIJAO', NULL, NULL, 20, 1),
-('ALIMENTO', 'LEITE', NULL, NULL, 20, 1),
-('ALIMENTO', 'AGUA', NULL, NULL, 25, 1),
-('LIMPEZA', 'ALCOOL', NULL, NULL, 5, 1),
-('LIMPEZA', 'AGUA_SANITARIA', NULL, NULL, 15, 1);
-
-INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
-('ROUPA', 'AGASALHO', 'M', 'P', 30, 2),
-('ROUPA', 'AGASALHO', 'F', 'P', 30, 2),
-('ROUPA', 'CAMISA', 'M', 'G', 10, 2),
-('ROUPA', 'CAMISA', 'F', 'M', 10, 2),
-('HIGIENE', 'SABONETE', NULL, NULL, 30, 2),
-('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 20, 2),
-('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 20, 2),
-('HIGIENE', 'ABSORVENTE', NULL, NULL, 10, 2),
-('ALIMENTO', 'ARROZ', NULL, NULL, 30, 2),
-('ALIMENTO', 'FEIJAO', NULL, NULL, 25, 2),
-('ALIMENTO', 'LEITE', NULL, NULL, 25, 2),
-('ALIMENTO', 'AGUA', NULL, NULL, 75, 2),
-('LIMPEZA', 'ALCOOL', NULL, NULL, 10, 2),
-('LIMPEZA', 'AGUA_SANITARIA', NULL, NULL, 2, 2);
-
-INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
-('ROUPA', 'AGASALHO', 'M', 'M', 15, 3),
-('ROUPA', 'AGASALHO', 'F', 'P', 15, 3),
-('ROUPA', 'CAMISA', 'M', 'P', 10, 3),
-('ROUPA', 'CAMISA', 'F', 'M', 10, 3),
-('HIGIENE', 'SABONETE', NULL, NULL, 15, 3),
-('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 10, 3),
-('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 10, 3),
-('HIGIENE', 'ABSORVENTE', NULL, NULL, 15, 3),
-('ALIMENTO', 'ARROZ', NULL, NULL, 20, 3),
-('ALIMENTO', 'FEIJAO', NULL, NULL, 15, 3),
-('ALIMENTO', 'LEITE', NULL, NULL, 15, 3),
-('ALIMENTO', 'AGUA', NULL, NULL, 82, 3),
-('LIMPEZA', 'ALCOOL', NULL, NULL, 7, 3);
-
-
-INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
-('ROUPA', 'AGASALHO', 'M', 'M', 30, 4),
-('ROUPA', 'AGASALHO', 'F', 'P', 30, 4),
+('ROUPA', 'AGASALHO', 'M', 'G', 20, 4),
+('ROUPA', 'AGASALHO', 'F', 'P', 20, 4),
 ('ROUPA', 'CAMISA', 'M', 'G', 10, 4),
-('ROUPA', 'CAMISA', 'F', 'P', 10, 4),
-('HIGIENE', 'SABONETE', NULL, NULL, 30, 4),
-('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 20, 4),
-('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 20, 4),
+('ROUPA', 'CAMISA', 'F', 'M', 10, 4),
+('HIGIENE', 'SABONETE', NULL, NULL, 20, 4),
+('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 15, 4),
+('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 15, 4),
 ('HIGIENE', 'ABSORVENTE', NULL, NULL, 10, 4),
-('ALIMENTO', 'ARROZ', NULL, NULL, 30, 4),
-('ALIMENTO', 'FEIJAO', NULL, NULL, 25, 4),
-('ALIMENTO', 'LEITE', NULL, NULL, 25, 4),
-('ALIMENTO', 'AGUA', NULL, NULL, 76, 4),
-('LIMPEZA', 'ALCOOL', NULL, NULL, 20, 4),
-('LIMPEZA', 'AGUA_SANITARIA', NULL, NULL, 3, 4);
+('ALIMENTO', 'ARROZ', NULL, NULL, 20, 4),
+('ALIMENTO', 'FEIJAO', NULL, NULL, 20, 4),
+('ALIMENTO', 'LEITE', NULL, NULL, 20, 4),
+('ALIMENTO', 'AGUA', NULL, NULL, 25, 4),
+('LIMPEZA', 'ALCOOL', NULL, NULL, 5, 4),
+('LIMPEZA', 'AGUA_SANITARIA', NULL, NULL, 15, 4);
+
+INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
+('ROUPA', 'AGASALHO', 'M', 'P', 30, 5),
+('ROUPA', 'AGASALHO', 'F', 'P', 30, 5),
+('ROUPA', 'CAMISA', 'M', 'G', 10, 5),
+('ROUPA', 'CAMISA', 'F', 'M', 10, 5),
+('HIGIENE', 'SABONETE', NULL, NULL, 30, 5),
+('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 20, 5),
+('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 20, 5),
+('HIGIENE', 'ABSORVENTE', NULL, NULL, 10, 5),
+('ALIMENTO', 'ARROZ', NULL, NULL, 30, 5),
+('ALIMENTO', 'FEIJAO', NULL, NULL, 25, 5),
+('ALIMENTO', 'LEITE', NULL, NULL, 25, 5),
+('ALIMENTO', 'AGUA', NULL, NULL, 75, 5),
+('LIMPEZA', 'ALCOOL', NULL, NULL, 10, 5),
+('LIMPEZA', 'AGUA_SANITARIA', NULL, NULL, 2, 5);
+
+INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
+('ROUPA', 'AGASALHO', 'M', 'M', 15, 6),
+('ROUPA', 'AGASALHO', 'F', 'P', 15, 6),
+('ROUPA', 'CAMISA', 'M', 'P', 10, 6),
+('ROUPA', 'CAMISA', 'F', 'M', 10, 6),
+('HIGIENE', 'SABONETE', NULL, NULL, 15, 6),
+('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 10, 6),
+('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 10, 6),
+('HIGIENE', 'ABSORVENTE', NULL, NULL, 15, 6),
+('ALIMENTO', 'ARROZ', NULL, NULL, 20, 6),
+('ALIMENTO', 'FEIJAO', NULL, NULL, 15, 6),
+('ALIMENTO', 'LEITE', NULL, NULL, 15, 6),
+('ALIMENTO', 'AGUA', NULL, NULL, 82, 6),
+('LIMPEZA', 'ALCOOL', NULL, NULL, 7, 6);
 
 
 INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
-('ROUPA', 'AGASALHO', 'M', 'M', 15, 3),
-('ROUPA', 'AGASALHO', 'F', 'P', 15, 3),
-('ROUPA', 'CAMISA', 'M', 'P', 10, 3),
-('ROUPA', 'CAMISA', 'F', 'M', 10, 3),
-('HIGIENE', 'SABONETE', NULL, NULL, 15, 3),
-('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 10, 3),
-('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 10, 3),
-('HIGIENE', 'ABSORVENTE', NULL, NULL, 15, 3),
-('ALIMENTO', 'ARROZ', NULL, NULL, 20, 3),
-('ALIMENTO', 'FEIJAO', NULL, NULL, 15, 3),
-('ALIMENTO', 'LEITE', NULL, NULL, 15, 3),
-('ALIMENTO', 'AGUA', NULL, NULL, 82, 3),
-('LIMPEZA', 'ALCOOL', NULL, NULL, 7, 3);
+('ROUPA', 'AGASALHO', 'M', 'M', 30, 7),
+('ROUPA', 'AGASALHO', 'F', 'P', 30, 7),
+('ROUPA', 'CAMISA', 'M', 'G', 10, 7),
+('ROUPA', 'CAMISA', 'F', 'P', 10, 7),
+('HIGIENE', 'SABONETE', NULL, NULL, 30, 7),
+('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 20, 7),
+('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 20, 7),
+('HIGIENE', 'ABSORVENTE', NULL, NULL, 10, 7),
+('ALIMENTO', 'ARROZ', NULL, NULL, 30, 7),
+('ALIMENTO', 'FEIJAO', NULL, NULL, 25, 7),
+('ALIMENTO', 'LEITE', NULL, NULL, 25, 7),
+('ALIMENTO', 'AGUA', NULL, NULL, 76, 7),
+('LIMPEZA', 'ALCOOL', NULL, NULL, 20, 7),
+('LIMPEZA', 'AGUA_SANITARIA', NULL, NULL, 3, 7);
+
+
+INSERT INTO produtos (categoria, item, sexo, tamanho, quantidade, armazem_id) VALUES
+('ROUPA', 'AGASALHO', 'M', 'M', 15, 7),
+('ROUPA', 'AGASALHO', 'F', 'P', 15, 7),
+('ROUPA', 'CAMISA', 'M', 'P', 10, 7),
+('ROUPA', 'CAMISA', 'F', 'M', 10, 7),
+('HIGIENE', 'SABONETE', NULL, NULL, 15, 7),
+('HIGIENE', 'ESCOVA_DE_DENTES', NULL, NULL, 10, 7),
+('HIGIENE', 'PASTA_DE_DENTES', NULL, NULL, 10, 7),
+('HIGIENE', 'ABSORVENTE', NULL, NULL, 15, 7),
+('ALIMENTO', 'ARROZ', NULL, NULL, 20, 7),
+('ALIMENTO', 'FEIJAO', NULL, NULL, 15, 7),
+('ALIMENTO', 'LEITE', NULL, NULL, 15, 7),
+('ALIMENTO', 'AGUA', NULL, NULL, 82, 7),
+('LIMPEZA', 'ALCOOL', NULL, NULL, 7, 7);

@@ -92,7 +92,11 @@ public class AbrigoService {
 
 
     public Integer getAbrigoArmazemId(Integer id) {
-        return abrigoRepository.getAbrigoArmazemId(id);
+        Integer abrigoArmazemId = abrigoRepository.getAbrigoArmazemId(id);
+        if (abrigoArmazemId == null) {
+            abrigoArmazemId = armazemDAO.save(id, TipoArmazem.ABRIGO);
+        }
+        return abrigoArmazemId;
     }
 
 

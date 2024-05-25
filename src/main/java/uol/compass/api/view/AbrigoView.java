@@ -415,6 +415,8 @@ public class AbrigoView implements TableView {
                 var id = scanner.nextInt();
                 try {
                     var abrigo = abrigoService.findByIdOrException(id);
+                    System.out.printf("\nEstoque do abrigo %s: \n", abrigo.getNome());
+                    abrigoService.abrigoTotalDoacoes(abrigo.getId());
                     System.out.println("\n" + abrigo);
                 } catch (AbrigoNaoEncontradoException e) {
                     System.out.println(e.getMessage());

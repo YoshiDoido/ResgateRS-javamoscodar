@@ -86,6 +86,7 @@ public class OrdemPedidoDAOImpl implements OrdemPedidoDAO {
                 ps.setString(4, "PENDENTE");
                 ps.setInt(5, entity.getQuantidade());
                 ps.setString(6, entity.getCategoria().name());
+
                 ps.executeUpdate();
                 try(ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {

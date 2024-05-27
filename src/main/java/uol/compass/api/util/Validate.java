@@ -64,6 +64,9 @@ public class Validate {
             if (nome != null && !(nome.isBlank())) {
                 break;
             }
+
+            
+
             System.out.println();
             System.out.println(errorMessage);
             System.out.println();

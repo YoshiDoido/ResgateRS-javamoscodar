@@ -54,15 +54,17 @@ CREATE TABLE produtos (
 CREATE TABLE ordem_pedidos(
     id INT NOT NULL AUTO_INCREMENT,
     centro_distribuicao_id INT NOT NULL,
-    abrigo_id INT NOT NULL,
-    categoria ENUM('ALIMENTO', 'HIGIENE', 'ROUPA', 'LIMPEZA') NOT NULL,
-    item ENUM('ARROZ', 'FEIJAO', 'LEITE', 'AGUA', 'SABONETE', 'ESCOVA_DE_DENTES', 'PASTA_DE_DENTES', 'ABSORVENTE', 'AGASALHO', 'CAMISA', 'ALCOOL', 'AGUA_SANITARIA') NOT NULL,
+    centro_distribuicao_envio INT NULL,
+    abrigo_id INT NULL,
+    categoria ENUM('ALIMENTO', 'HIGIENE', 'ROUPA') NOT NULL,
+    item ENUM('ARROZ', 'FEIJAO', 'LEITE', 'SABONETE', 'ESCOVA_DE_DENTES', 'PASTA_DE_DENTES', 'ABSORVENTE', 'AGASALHO', 'CAMISA') NOT NULL,
     quantidade INT NOT NULL,
     status ENUM('ACEITO', 'RECUSADO', 'PENDENTE') NOT NULL,
     motivo VARCHAR(255) NULL,
 
     PRIMARY KEY (id),
     FOREIGN KEY (centro_distribuicao_id) REFERENCES centro_distribuicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (centro_distribuicao_envio) references centro_distribuicao(id) ON DELETE CASCADE,
     FOREIGN KEY (abrigo_id) REFERENCES abrigos(id) ON DELETE CASCADE
 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
 
